@@ -1,23 +1,77 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import "@/styles/css/element-#FFB200/index.css";
+// import "element-ui/lib/theme-chalk/index.css";
+import ElementUI from "element-ui";
 
+Vue.use(ElementUI);
 Vue.use(VueRouter);
 
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
+    redirect: "/login",
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
+    path: "/login",
+    component: () => import("@/views/Login"),
+  },
+  {
+    path: "/home",
+    component: () => import("@/views/dashboard"),
+    redirect: "/dashboard",
+    children: [
+      {
+        path: "/dashboard",
+        component: () => import("@/views/dashboard/dashboard"),
+      },
+      {
+        path: "/manage-base-info",
+        component: () => import("@/views/manage-base-info"),
+        children: [
+          {
+            path: "warehouse",
+            component: () =>
+              import("@/views/manage-base-info/Warehouse/warehouse"),
+          },
+          {
+            path: "warehouse/details/null",
+            component: () =>
+              import("@/views/manage-base-info/Warehouse/components/details"),
+          },
+          {
+            path: "area",
+            component: () => import("@/views/manage-base-info/area"),
+          },
+          {
+            path: "location",
+            component: () => import("@/views/manage-base-info/location"),
+          },
+          {
+            path: "location-view",
+            component: () => import("@/views/manage-base-info/location-view"),
+          },
+          {
+            path: "goods",
+            component: () => import("@/views/manage-base-info/goods"),
+          },
+          {
+            path: "goods-type",
+            component: () => import("@/views/manage-base-info/goods-type"),
+          },
+        ],
+      },
+      {
+        path: "/manage-storage",
+        component: () => import("@/views/manage-storage"),
+        children: [
+          {
+            path: "list",
+            component: () => import("@/views/manage-storage/list"),
+          },
+        ],
+      },
+    ],
   },
 ];
 
