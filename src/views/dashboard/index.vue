@@ -122,13 +122,12 @@ export default {
           this.tabList.slice(this.countVal, this.countVal + 1)
         );
       }
-      console.log(val);
       this.$router.push({ path: this.tabList[val].path }).catch((err) => {
         return err;
       });
     },
     $route(to) {
-      console.log(to);
+      console.log("route", to);
       this.addTabs(to);
       this.sidebarInfo.forEach((item) => {
         item.submenu.forEach((i) => {
@@ -151,7 +150,7 @@ export default {
       "countVals",
     ]),
     addTab(item) {
-      console.log(item);
+      console.log("addTab", item);
       this.setCurrentIndex(item.path);
       this.addTabs(item);
     },

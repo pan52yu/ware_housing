@@ -205,8 +205,8 @@ export default {
   methods: {
     // 获取 库区使用情况
     async getAreaUseStatus() {
-      const { data } = await getAreaUseStatus();
-      console.log("getAreaUseStatus", data);
+      await getAreaUseStatus();
+      // console.log("getAreaUseStatus", data);
     },
     // 获取库存使用情况
     async getstockUseStatus() {

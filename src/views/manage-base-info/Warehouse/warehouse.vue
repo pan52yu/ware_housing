@@ -53,7 +53,11 @@
       <el-row>
         <span style="width: 30px; display: inline-block; height: 100%"></span>
         <el-button
-          @click="$router.push('/manage-base-info/warehouse/details/null')"
+          @click="
+            $router.push({
+              path: '/manage-base-info/warehouse/details/null',
+            })
+          "
           type="success"
           round
           >新增仓库
@@ -238,12 +242,12 @@ export default {
     // 分页查询仓库
     async pagingQueryWarehouse() {
       const { data } = await pagingQueryWarehouse(this.warehouseFormLabel);
-      console.log(data);
       this.tableData = data.data.records;
       this.total = data.data.total - 0;
     },
     handleClick(row) {
       console.log(row);
+      this.$router.push(`/manage-base-info/warehouse/details/${row.id}`);
     },
     tableRowClassName({ rowIndex }) {
       if (rowIndex % 2 === 0) {

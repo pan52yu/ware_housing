@@ -12,7 +12,7 @@
           <el-col :span="16">
             <el-row type="flex" justify="space-between">
               <el-col :span="11">
-                <el-form-item label="仓库编码" prop="code">
+                <el-form-item label="仓库编码">
                   <el-input disabled v-model="ruleForm.code"></el-input>
                 </el-form-item>
               </el-col>
@@ -42,15 +42,21 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <!--    TODO：省市区    -->
+        <!--    省市区    -->
         <el-row>
           <el-col :span="16">
-            <el-form-item label="省市区" prop="name">
-              <el-input placeholder="请输入" v-model="ruleForm.name"></el-input>
+            <el-form-item label="省市区" prop="location">
+              <el-cascader
+                size="large"
+                :options="options"
+                :props="{ expandTrigger: 'hover' }"
+                v-model="ruleForm.location"
+                @change="handleChange"
+              >
+              </el-cascader>
             </el-form-item>
           </el-col>
         </el-row>
-        <!--    TODO    -->
         <el-row type="flex" justify="space-between">
           <el-col :span="16">
             <el-form-item label="详细地址">
@@ -61,11 +67,9 @@
             </el-form-item>
           </el-col>
           <el-col :span="7">
-            <el-form-item label="仓库状态" prop="type">
-              <template>
-                <el-radio v-model="ruleForm.status" label="1">启用</el-radio>
-                <el-radio v-model="ruleForm.status" label="0">禁用</el-radio>
-              </template>
+            <el-form-item label="仓库状态" prop="status">
+              <el-radio v-model="ruleForm.status" :label="1">启用</el-radio>
+              <el-radio v-model="ruleForm.status" :label="0">禁用</el-radio>
             </el-form-item>
           </el-col>
         </el-row>
@@ -82,7 +86,7 @@
                 </el-form-item>
               </el-col>
               <el-col :span="11">
-                <el-form-item label="仓库名称" prop="personName">
+                <el-form-item label="负责人" prop="personName">
                   <el-input
                     placeholder="请输入"
                     v-model="ruleForm.personName"
@@ -102,8 +106,10 @@
         </el-row>
         <el-row>
           <div class="buttonBox">
-            <el-button round>返回</el-button>
-            <el-button type="warning" round>提交</el-button>
+            <el-button @click="$router.back()" round>返回</el-button>
+            <el-button @click.native="submit" type="warning" round
+              >提交
+            </el-button>
           </div>
         </el-row>
       </el-form>
@@ -113,11 +119,14 @@
 
 <script>
 import { forNextEncod } from "@/api/codeFactory";
+import { addWarehouse, modifyWarehouse, queryWarehouse } from "@/api/warehouse";
+import { regionDataPlus, CodeToText } from "element-china-area-data";
 
 export default {
   name: "Details",
   data() {
     return {
+      options: regionDataPlus,
       ruleForm: {
         code: "22222", // 仓库编码
         name: "", // 仓库名称
@@ -128,35 +137,108 @@ export default {
         phone: "", // 联系电话
         status: 1, // 仓库状态
       },
+      ceshi: [],
       rules: {
         name: [
           {
             required: true,
-            message: "Name is required.",
+            message: "请输入仓库名称",
           },
         ],
         type: [
           {
             required: true,
-            message: "Name is required.",
+            message: "请选择仓库类型",
+          },
+        ],
+        location: [
+          {
+            required: true,
+            message: "请选择省市区",
+          },
+        ],
+        status: [
+          {
+            required: true,
+            message: "请选择状态",
           },
         ],
         personName: [
           {
             required: true,
-            message: "Name is required.",
+            message: "请选择负责人",
           },
         ],
       },
+      value: [],
     };
   },
   created() {
-    this.forNextEncod();
+    this.queryWarehouse();
   },
   methods: {
-    async forNextEncod() {
-      const res = await forNextEncod();
-      console.log(res);
+    // 查询仓库根据id 或 查询code
+    async queryWarehouse() {
+      try {
+        // 不是新增就是编辑 发查询请求
+        if (this.$route.params.id !== "null") {
+          const res = await queryWarehouse(this.$route.params.id);
+          this.ruleForm = res.data.data;
+          if (
+            this.ruleForm.city === "119900" ||
+            this.ruleForm.city === "129900"
+          ) {
+            this.ruleForm.city = (this.ruleForm.city - 9800).toString();
+          }
+          this.ruleForm.location = [
+            this.ruleForm.province,
+            this.ruleForm.city,
+            this.ruleForm.area,
+          ];
+          this.ceshi = [
+            CodeToText[this.ruleForm.province],
+            CodeToText[this.ruleForm.city],
+            CodeToText[this.ruleForm.area],
+          ].join("/");
+        } else {
+          // 是新增 查询code
+          const res = await forNextEncod();
+          if (res.status !== 200) {
+            return this.$message.error("获取code失败");
+          }
+          this.ruleForm.code = res.data.data;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    async submit() {
+      this.$set(
+        this.ruleForm,
+        "location",
+        [
+          CodeToText[this.ruleForm.province],
+          CodeToText[this.ruleForm.city],
+          CodeToText[this.ruleForm.area],
+        ].join("/")
+      );
+      try {
+        if (this.$route.params.id === "null") {
+          await addWarehouse(this.ruleForm);
+        } else {
+          await modifyWarehouse(this.ruleForm);
+        }
+        this.$router.back();
+        this.$message.success("恭喜你，提交成功！");
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    handleChange(value) {
+      //value代表每个地方的区域码
+      this.ruleForm.province = value[0];
+      this.ruleForm.city = value[1];
+      this.ruleForm.area = value[2];
     },
   },
 };

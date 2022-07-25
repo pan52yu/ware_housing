@@ -35,7 +35,7 @@ const routes = [
               import("@/views/manage-base-info/Warehouse/warehouse"),
           },
           {
-            path: "warehouse/details/null",
+            path: "warehouse/details/:id",
             component: () =>
               import("@/views/manage-base-info/Warehouse/components/details"),
           },
