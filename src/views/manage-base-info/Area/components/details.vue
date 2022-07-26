@@ -33,7 +33,11 @@
           </el-col>
           <el-col :span="5">
             <el-form-item label="库区名称" prop="name">
-              <el-input placeholder="请输入" v-model="ruleForm.name"></el-input>
+              <el-input
+                clearable
+                placeholder="请输入"
+                v-model="ruleForm.name"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="5">
@@ -87,6 +91,7 @@
           <el-col :span="5">
             <el-form-item label="负责人" prop="personName">
               <el-input
+                clearable
                 placeholder="请输入"
                 v-model="ruleForm.personName"
               ></el-input>
@@ -95,6 +100,7 @@
           <el-col :span="5">
             <el-form-item label="联系电话">
               <el-input
+                clearable
                 placeholder="请输入"
                 v-model="ruleForm.phone"
               ></el-input>
@@ -138,14 +144,11 @@ export default {
   data() {
     return {
       ruleForm: {
-        code: "22222", // 仓库编码
-        name: "", // 仓库名称
-        type: "", // 仓库类型
-        address: "", // 详细地址
-        surface: "", // 仓库面积
+        code: "", // 库区编码
+        name: "", // 库区名称
         personName: "", // 负责人
         phone: "", // 联系电话
-        status: 1, // 仓库状态
+        status: 1, // 库区状态
       },
       ceshi: [],
       rules: {

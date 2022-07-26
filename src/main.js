@@ -5,6 +5,7 @@ import store from "./store";
 import "@/styles/css/global.css";
 import Router from "vue-router";
 
+// 解决路由跳转报错
 const originalPush = Router.prototype.push;
 Router.prototype.push = function push(location) {
   return originalPush.call(this, location).catch((err) => err);

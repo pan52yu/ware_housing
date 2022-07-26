@@ -50,7 +50,13 @@ const routes = [
           },
           {
             path: "location",
-            component: () => import("@/views/manage-base-info/location"),
+            component: () =>
+              import("@/views/manage-base-info/Location/location"),
+          },
+          {
+            path: "location/details/:id",
+            component: () =>
+              import("@/views/manage-base-info/Location/components/details"),
           },
           {
             path: "location-view",

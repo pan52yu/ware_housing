@@ -1,18 +1,18 @@
 <template>
-  <div class="area">
+  <div class="location">
     <el-card>
       <el-form label-position="top" :model="areaFormLabel" ref="areaFormRef">
         <el-row>
           <el-col :span="6">
-            <el-form-item label="仓库名称" prop="warehouseName">
+            <el-form-item label="库区名称" prop="areaName">
               <el-input
                 placeholder="请输入"
-                v-model="areaFormLabel.warehouseName"
+                v-model="areaFormLabel.areaName"
               ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="库区名称" prop="name">
+            <el-form-item label="库位名称" prop="name">
               <el-input
                 placeholder="请输入"
                 v-model="areaFormLabel.name"
@@ -20,7 +20,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="仓库状态" prop="status">
+            <el-form-item label="库位状态" prop="status">
               <el-select
                 v-model="areaFormLabel.status"
                 placeholder="请选择"
@@ -49,10 +49,10 @@
       <el-row style="padding-left: 30px" type="flex" justify="space-between">
         <el-col :span="6">
           <el-button
-            @click="$router.push('/manage-base-info/area/details/null')"
+            @click="$router.push('/manage-base-info/location/details/null')"
             type="success"
             round
-            >新增库区
+            >新增库位
           </el-button>
         </el-col>
         <el-col :span="6">
@@ -60,13 +60,13 @@
             @click="exportOrderData"
             style="background-color: #f8f5f5"
             round
-            >下载库区模板
+            >下载库位模板
           </el-button>
           <el-button
             @click="dialogVisible = true"
             style="background-color: #f8f5f5"
             round
-            >导入库区模板
+            >导入库位模板
           </el-button>
         </el-col>
       </el-row>
@@ -88,12 +88,16 @@
         border
         style="width: 100%"
       >
-        <el-table-column type="index" width="50" label="序号"></el-table-column>
+        <el-table-column type="index" width="50"></el-table-column>
         <el-table-column prop="warehouseName" label="所属仓库" width="150">
         </el-table-column>
-        <el-table-column prop="code" label="仓库编号" width="150">
+        <el-table-column prop="areaCode" label="库区编号" width="150">
         </el-table-column>
-        <el-table-column prop="name" label="库区名称" width="150">
+        <el-table-column prop="areaName" label="库区名称" width="150">
+        </el-table-column>
+        <el-table-column prop="code" label="库位编号" width="150">
+        </el-table-column>
+        <el-table-column prop="name" label="库位名称" width="150">
         </el-table-column>
         <el-table-column prop="temperatureType" label="温度类型" width="150">
           <template v-slot="scope">
@@ -106,7 +110,7 @@
             }}
           </template>
         </el-table-column>
-        <el-table-column prop="bearingType" label="配重类型" width="180">
+        <el-table-column prop="bearingType" label="承重类型" width="180">
           <template v-slot="scope">
             {{ scope.row.bearingType === "ZX" ? "重型" : "轻型" }}
           </template>
@@ -128,21 +132,14 @@
         </el-table-column>
         <el-table-column prop="status" label="库区状态" width="120">
           <template v-slot="scope">
-            {{ scope.row.status === 0 ? "禁用" : "启用" }}
+            {{ scope.row.status === 0 ? "停用" : "启用" }}
           </template>
         </el-table-column>
         <el-table-column
-          prop="personName"
-          label="负责人"
+          prop="maxNum"
+          label="承载上限"
           width="120"
         ></el-table-column>
-        <el-table-column
-          prop="phone"
-          label="联系电话"
-          width="120"
-        ></el-table-column>
-        <el-table-column prop="includedNum" label="库区数量" width="120">
-        </el-table-column>
         <el-table-column
           prop="updateTime"
           label="更新时间"
@@ -168,7 +165,7 @@
       <!--   没数据时显示的   -->
       <div class="emptyTip" v-else>
         <span class="imgIcon"></span>
-        <p>暂无库区</p>
+        <p>暂无库位</p>
       </div>
       <!--   分页   -->
       <el-row type="flex" justify="center">
@@ -194,9 +191,8 @@
           drag
           accept=".xlsx,.xls"
           :auto-upload="false"
-          :limit="1"
           :disabled="uploadIsDisabled"
-          action="http://127.0.0.1:8888/api/area/importExcel"
+          action="http://127.0.0.1:8888/api/location/upload"
         >
           <i style="color: #00be76" class="el-icon-upload"></i>
           <div class="el-upload__text">点击或将表格文件拖拽到这里上传</div>
@@ -248,18 +244,18 @@
 </template>
 
 <script>
-import { modifyArea, pagingQueryArea } from "@/api/area";
+import { pagingQueryLocation, modifyLocation } from "@/api/location";
 import FileSaver from "file-saver";
 import * as XLSX from "xlsx";
 
 export default {
-  name: "Area",
+  name: "Location",
   data() {
     return {
       // 控制上传文件的对话框
       dialogVisible: false,
       areaFormLabel: {
-        warehouseName: "",
+        areaName: "",
         status: undefined,
         name: "",
         current: 1,
@@ -279,7 +275,7 @@ export default {
     };
   },
   created() {
-    this.pagingQueryArea();
+    this.pagingQueryLocation();
   },
   computed: {
     promptInformation() {
@@ -308,9 +304,9 @@ export default {
           return this.$message.info("已取消修改状态");
         }
         row.status = row.status === 0 ? 1 : 0;
-        const res = await modifyArea({ ...row });
+        const res = await modifyLocation({ ...row });
         console.log(res);
-        await this.pagingQueryArea();
+        await this.pagingQueryLocation();
         this.$message.success("状态改变成功");
       } catch (e) {
         console.log(e);
@@ -326,30 +322,30 @@ export default {
     },
     // 搜索
     submitSearch() {
-      this.pagingQueryArea();
+      this.pagingQueryLocation();
     },
     // 重置表单
     resetFields() {
       this.$refs.areaFormRef.resetFields();
-      this.pagingQueryArea();
+      this.pagingQueryLocation();
     },
     handleCurrentChange(newPage) {
       this.areaFormLabel.current = newPage;
-      this.pagingQueryArea();
+      this.pagingQueryLocation();
     },
     handleSizeChange(newSize) {
       this.areaFormLabel.size = newSize;
-      this.pagingQueryArea();
+      this.pagingQueryLocation();
     },
     // 分页查询仓库
-    async pagingQueryArea() {
-      const { data } = await pagingQueryArea(this.areaFormLabel);
+    async pagingQueryLocation() {
+      const { data } = await pagingQueryLocation(this.areaFormLabel);
       this.tableData = data.data.records;
       this.total = data.data.total - 0;
     },
     handleClick(row) {
       console.log(row);
-      this.$router.push(`/manage-base-info/area/details/${row.id}`);
+      this.$router.push(`/manage-base-info/location/details/${row.id}`);
     },
     tableRowClassName({ rowIndex }) {
       if (rowIndex % 2 === 0) {
@@ -358,6 +354,7 @@ export default {
         return "statistics-warning-row2";
       }
     },
+    // 导出表格
     exportOrderData() {
       const xlsxParam = { raw: true };
       const wb = XLSX.utils.table_to_book(
@@ -372,7 +369,7 @@ export default {
       try {
         FileSaver.saveAs(
           new Blob([wbout], { type: "application/octet-stream" }),
-          "库区信息.xlsx"
+          "库位信息.xlsx"
         );
       } catch (e) {
         if (typeof console !== "undefined") console.log(e, wbout);

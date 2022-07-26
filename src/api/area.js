@@ -1,6 +1,6 @@
-// 分页查询库区详细信息
 import request from "@/utils/request";
 
+// 分页查询库区详细信息
 export const pagingQueryArea = (list) => {
   return request({
     url: "/api/area/pageDetail",
@@ -12,16 +12,6 @@ export const pagingQueryArea = (list) => {
 export const queryWarehouse = (id) => {
   return request({
     url: `/api/area/${id}`,
-  });
-};
-
-// 查询全部仓库列表
-export const queryAllWarehouse = () => {
-  return request({
-    url: `/api/warehouse/list`,
-    params: {
-      status: 1,
-    },
   });
 };
 
@@ -40,5 +30,15 @@ export const addArea = (data) => {
     url: "/api/area",
     method: "POST",
     data,
+  });
+};
+
+// 查询全部仓库列表
+export const queryAllWarehouse = () => {
+  return request({
+    url: `/api/warehouse/list`,
+    params: {
+      status: 1,
+    },
   });
 };

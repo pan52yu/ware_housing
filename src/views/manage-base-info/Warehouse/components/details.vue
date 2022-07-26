@@ -19,6 +19,7 @@
               <el-col :span="11">
                 <el-form-item label="仓库名称" prop="name">
                   <el-input
+                    clearable
                     placeholder="请输入"
                     v-model="ruleForm.name"
                   ></el-input>
@@ -61,6 +62,7 @@
           <el-col :span="16">
             <el-form-item label="详细地址">
               <el-input
+                clearable
                 placeholder="请输入"
                 v-model="ruleForm.address"
               ></el-input>
@@ -78,7 +80,11 @@
             <el-row type="flex" justify="space-between">
               <el-col :span="11">
                 <el-form-item label="仓库面积">
-                  <el-input placeholder="请输入" v-model="ruleForm.surface">
+                  <el-input
+                    clearable
+                    placeholder="请输入"
+                    v-model="ruleForm.surface"
+                  >
                     <template #suffix>
                       <div class="suffix">m³</div>
                     </template>
@@ -88,6 +94,7 @@
               <el-col :span="11">
                 <el-form-item label="负责人" prop="personName">
                   <el-input
+                    clearable
                     placeholder="请输入"
                     v-model="ruleForm.personName"
                   ></el-input>
@@ -98,6 +105,7 @@
           <el-col :span="7">
             <el-form-item label="联系电话">
               <el-input
+                clearable
                 placeholder="请输入"
                 v-model="ruleForm.phone"
               ></el-input>

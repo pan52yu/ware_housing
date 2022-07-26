@@ -13,3 +13,10 @@ export const KQForNextEncode = () => {
     url: `/api/codeFactory/next/KQ`,
   });
 };
+
+// 获取下一个编码
+export const KWForNextEncode = () => {
+  return request({
+    url: `/api/codeFactory/next/KW`,
+  });
+};
