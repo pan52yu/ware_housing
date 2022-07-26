@@ -1,8 +1,15 @@
 import request from "@/utils/request";
 
 // 获取下一个编码
-export const forNextEncod = () => {
+export const forNextEncode = () => {
   return request({
-    url: "/api/codeFactory/next/CK",
+    url: `/api/codeFactory/next/CK`,
+  });
+};
+
+// 获取下一个编码
+export const KQForNextEncode = () => {
+  return request({
+    url: `/api/codeFactory/next/KQ`,
   });
 };

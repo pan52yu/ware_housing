@@ -14,7 +14,16 @@ export const sidebarInfo = [
           },
         ],
       },
-      { title: "库区管理", path: "/manage-base-info/area" },
+      {
+        title: "库区管理",
+        path: "/manage-base-info/area",
+        children: [
+          {
+            title: "新增仓库",
+            path: "/manage-base-info/warehouse/details/null",
+          },
+        ],
+      },
       { title: "库位管理", path: "/manage-base-info/location" },
       { title: "库位视图", path: "/manage-base-info/location-view" },
       { title: "货品管理", path: "/manage-base-info/goods" },

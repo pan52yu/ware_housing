@@ -41,7 +41,12 @@ const routes = [
           },
           {
             path: "area",
-            component: () => import("@/views/manage-base-info/area"),
+            component: () => import("@/views/manage-base-info/Area/area"),
+          },
+          {
+            path: "area/details/:id",
+            component: () =>
+              import("@/views/manage-base-info/Area/components/details"),
           },
           {
             path: "location",

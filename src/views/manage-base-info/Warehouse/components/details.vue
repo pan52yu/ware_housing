@@ -118,7 +118,7 @@
 </template>
 
 <script>
-import { forNextEncod } from "@/api/codeFactory";
+import { forNextEncode } from "@/api/codeFactory";
 import { addWarehouse, modifyWarehouse, queryWarehouse } from "@/api/warehouse";
 import { regionDataPlus, CodeToText } from "element-china-area-data";
 
@@ -202,7 +202,7 @@ export default {
           ].join("/");
         } else {
           // 是新增 查询code
-          const res = await forNextEncod();
+          const res = await forNextEncode();
           if (res.status !== 200) {
             return this.$message.error("获取code失败");
           }
