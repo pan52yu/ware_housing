@@ -3,37 +3,32 @@
     <el-card>
       <el-form
         label-position="top"
-        :model="warehouseFormLabel"
+        :model="goodsFormLabel"
         ref="warehouseFormRef"
       >
         <el-row>
           <el-col :span="6">
-            <el-form-item label="仓库编号" prop="like_code">
+            <el-form-item label="货品编号" prop="code">
               <el-input
                 placeholder="请输入"
-                v-model="warehouseFormLabel.like_code"
+                v-model="goodsFormLabel.code"
               ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="仓库名称" prop="like_name">
+            <el-form-item label="货品名称" prop="name">
               <el-input
                 placeholder="请输入"
-                v-model="warehouseFormLabel.like_name"
+                v-model="goodsFormLabel.name"
               ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="仓库状态" prop="status">
-              <el-select
-                v-model="warehouseFormLabel.status"
-                placeholder="请选择"
-                value=""
-              >
-                <el-option label="全部" value=" "></el-option>
-                <el-option label="停用" value="0"></el-option>
-                <el-option label="启用" value="1"></el-option>
-              </el-select>
+            <el-form-item label="货主名称" prop="owner">
+              <el-input
+                placeholder="请输入"
+                v-model="goodsFormLabel.owner"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col class="submit" :span="6">
@@ -55,12 +50,12 @@
         <el-button
           @click="
             $router.push({
-              path: '/manage-base-info/warehouse/details.vue/null',
+              path: '/manage-base-info/goods/details/null',
             })
           "
           type="success"
           round
-          >新增仓库
+          >新增货品
         </el-button>
       </el-row>
       <!--   表格区域   -->
@@ -81,46 +76,62 @@
         style="width: 100%"
       >
         <el-table-column type="index" width="50" label="序号"></el-table-column>
-        <el-table-column prop="code" label="仓库编码" width="150">
+        <el-table-column prop="goodsTypeName" label="货品类型名称" width="150">
         </el-table-column>
-        <el-table-column prop="name" label="仓库名称" width="150">
+        <el-table-column prop="code" label="货品编号" width="150">
         </el-table-column>
-        <el-table-column prop="type" label="仓库类型" width="150">
+        <el-table-column prop="barCode" label="货品条码" width="150">
+        </el-table-column>
+        <el-table-column prop="name" label="货品名称" width="150">
+        </el-table-column>
+        <el-table-column prop="ownerName" label="货主名称" width="150">
+        </el-table-column>
+        <el-table-column prop="inspectionType" label="质检方式" width="150">
           <template v-slot="scope">
             {{
-              scope.row.type === "ZZ"
-                ? "中转仓"
-                : scope.row.type === "JG"
-                ? "加工仓"
-                : scope.row.type === "CB"
-                ? "储备仓"
-                : "冷藏仓"
+              scope.row.inspectionType === "BCL"
+                ? "不处理"
+                : scope.row.inspectionType === "QJ"
+                ? "全检"
+                : "抽检"
             }}
           </template>
         </el-table-column>
-        <el-table-column prop="location" label="省/市/区" width="250">
-        </el-table-column>
-        <el-table-column prop="address" label="详细地址" width="180">
-        </el-table-column>
-        <el-table-column prop="status" label="仓库状态" width="120">
+        <el-table-column prop="temperatureType" label="温度要求" width="150">
           <template v-slot="scope">
-            {{ scope.row.status === 0 ? "停用" : "启用" }}
+            {{
+              scope.row.temperatureType === "CW"
+                ? "常温"
+                : scope.row.temperatureType === "LC"
+                ? "冷藏"
+                : "恒温"
+            }}
           </template>
         </el-table-column>
-        <el-table-column prop="surface" label="仓库面积m²" width="120">
+        <el-table-column prop="bearingType" label="承重要求" width="120">
+          <template v-slot="scope">
+            {{
+              scope.row.bearingType === "ZX"
+                ? "重型"
+                : scope.row.bearingType === "QX"
+                ? "轻型"
+                : "中型"
+            }}
+          </template>
         </el-table-column>
-        <el-table-column prop="includedNum" label="库区数量" width="120">
+        <el-table-column prop="areaName" label="指定库区" width="120">
+        </el-table-column>
+        <el-table-column prop="volume" label="体积m³" width="120">
         </el-table-column>
         <el-table-column
-          prop="personName"
-          label="负责人"
+          prop="unit"
+          label="单价（元）"
           width="120"
         ></el-table-column>
-        <el-table-column
-          prop="phone"
-          label="联系电话"
-          width="120"
-        ></el-table-column>
+        <el-table-column prop="unit" label="单位" width="120">
+        </el-table-column>
+        <el-table-column prop="guaranteeDay" label="保质天数（天）" width="120">
+        </el-table-column>
         <el-table-column
           prop="updateTime"
           label="更新时间"
@@ -130,9 +141,6 @@
           <template v-slot="scope">
             <el-button @click="handleClick(scope.row)" type="text" size="small"
               >编辑
-            </el-button>
-            <el-button type="text" @click="isStatus(scope.row)" size="small">
-              {{ scope.row.status === 0 ? "启用" : "停用" }}
             </el-button>
             <el-button
               @click="deleteWarehouse(scope.row)"
@@ -153,9 +161,9 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="warehouseFormLabel.current"
+          :current-page="goodsFormLabel.current"
           :page-sizes="[5, 10, 30, 40]"
-          :page-size="warehouseFormLabel.size"
+          :page-size="goodsFormLabel.size"
           layout="total, sizes, prev, pager, next, jumper"
           :total="total"
         >
@@ -166,17 +174,16 @@
 </template>
 
 <script>
-import { modifyWarehouse, pagingQueryWarehouse } from "@/api/warehouse";
+import { pagingQueryGoods } from "@/api/goods";
 
 export default {
-  name: "warehouse",
+  name: "goods",
   data() {
     return {
-      warehouseFormLabel: {
-        like_code: "",
-        like_name: "",
-        status: "",
-        descs: "createTime",
+      goodsFormLabel: {
+        code: "",
+        name: "",
+        owner: "",
         current: 1,
         size: 5,
       },
@@ -186,35 +193,9 @@ export default {
     };
   },
   created() {
-    this.pagingQueryWarehouse();
+    this.pagingQueryGoods();
   },
   methods: {
-    // 修改状态
-    async isStatus(row) {
-      let status = null;
-      status = row.status === 0 ? "启用" : "停用";
-      try {
-        const result = await this.$confirm(
-          `确定要${status}：${row.name}吗？`,
-          `确认${status}`,
-          {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-          }
-        ).catch((error) => error);
-        console.log(result);
-        if (result !== "confirm") {
-          return this.$message.info("已取消修改状态");
-        }
-        row.status = row.status === 0 ? 1 : 0;
-        const res = await modifyWarehouse({ ...row });
-        console.log(res);
-        await this.pagingQueryWarehouse();
-        this.$message.success("状态改变成功");
-      } catch (e) {
-        console.log(e);
-      }
-    },
     // 删除
     deleteWarehouse() {
       this.$notify.info({
@@ -225,30 +206,31 @@ export default {
     },
     // 搜索
     submitSearch() {
-      this.pagingQueryWarehouse();
+      this.pagingQueryGoods();
     },
     // 重置表单
     resetFields() {
       this.$refs.warehouseFormRef.resetFields();
     },
     handleCurrentChange(newPage) {
-      this.warehouseFormLabel.current = newPage;
-      this.pagingQueryWarehouse();
+      this.goodsFormLabel.current = newPage;
+      this.pagingQueryGoods();
     },
     handleSizeChange(newSize) {
-      this.warehouseFormLabel.size = newSize;
-      this.pagingQueryWarehouse();
+      this.goodsFormLabel.size = newSize;
+      this.pagingQueryGoods();
     },
     // 分页查询仓库
-    async pagingQueryWarehouse() {
-      const { data } = await pagingQueryWarehouse(this.warehouseFormLabel);
+    async pagingQueryGoods() {
+      const { data } = await pagingQueryGoods(this.goodsFormLabel);
       this.tableData = data.data.records;
       this.total = data.data.total - 0;
     },
     handleClick(row) {
       console.log(row);
-      this.$router.push(`/manage-base-info/warehouse/details/${row.id}`);
+      this.$router.push(`/manage-base-info/goods/details/${row.id}`);
     },
+    // 表格隔行颜色
     tableRowClassName({ rowIndex }) {
       if (rowIndex % 2 === 0) {
         return "";

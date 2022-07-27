@@ -49,7 +49,7 @@
       <el-row style="padding-left: 30px" type="flex" justify="space-between">
         <el-col :span="6">
           <el-button
-            @click="$router.push('/manage-base-info/area/details/null')"
+            @click="$router.push('/manage-base-info/area/details.vue/null')"
             type="success"
             round
             >新增库区

@@ -35,7 +35,7 @@ const routes = [
               import("@/views/manage-base-info/Warehouse/warehouse"),
           },
           {
-            path: "warehouse/details/:id",
+            path: "warehouse/details.vue/:id",
             component: () =>
               import("@/views/manage-base-info/Warehouse/components/details"),
           },
@@ -44,7 +44,7 @@ const routes = [
             component: () => import("@/views/manage-base-info/Area/area"),
           },
           {
-            path: "area/details/:id",
+            path: "area/details.vue/:id",
             component: () =>
               import("@/views/manage-base-info/Area/components/details"),
           },
@@ -54,17 +54,23 @@ const routes = [
               import("@/views/manage-base-info/Location/location"),
           },
           {
-            path: "location/details/:id",
+            path: "location/details.vue/:id",
             component: () =>
               import("@/views/manage-base-info/Location/components/details"),
           },
           {
             path: "location-view",
-            component: () => import("@/views/manage-base-info/location-view"),
+            component: () =>
+              import("@/views/manage-base-info/LocationView/location-view"),
           },
           {
             path: "goods",
-            component: () => import("@/views/manage-base-info/goods"),
+            component: () => import("@/views/manage-base-info/Goods/goods"),
+          },
+          {
+            path: "/manage-base-info/goods/details/:id",
+            component: () =>
+              import("@/views/manage-base-info/Goods/components/details"),
           },
           {
             path: "goods-type",

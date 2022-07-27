@@ -20,3 +20,9 @@ export const KWForNextEncode = () => {
     url: `/api/codeFactory/next/KW`,
   });
 };
+
+export const HPForNextEncode = () => {
+  return request({
+    url: `/api/codeFactory/next/HP`,
+  });
+};

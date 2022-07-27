@@ -35,7 +35,7 @@
               <div class="divFontDisplay">暂无库区</div>
               <el-button
                 @click.native="
-                  $router.push('/manage-base-info/area/details/null')
+                  $router.push('/manage-base-info/area/details.vue/null')
                 "
                 type="success"
                 class="importantButton"
@@ -205,7 +205,7 @@
           <p>暂无库位</p>
           <el-button
             @click.native="
-              $router.push('/manage-base-info/location/details/null')
+              $router.push('/manage-base-info/location/details.vue/null')
             "
             type="success"
             class="importantButton"

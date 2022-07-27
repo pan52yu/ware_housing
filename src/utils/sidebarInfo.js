@@ -10,7 +10,7 @@ export const sidebarInfo = [
         children: [
           {
             title: "新增仓库",
-            path: "/manage-base-info/warehouse/details",
+            path: "/manage-base-info/warehouse/details.vue",
           },
         ],
       },
@@ -20,7 +20,7 @@ export const sidebarInfo = [
         children: [
           {
             title: "新增仓库",
-            path: "/manage-base-info/warehouse/details",
+            path: "/manage-base-info/warehouse/details.vue",
           },
         ],
       },
