@@ -14,7 +14,7 @@ export const removeWarehouse = (id) => {
     url: "/api/warehouse",
     method: "DELETE",
     params: {
-      "ids[]": id,
+      id,
     },
   });
 };

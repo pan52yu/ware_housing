@@ -42,3 +42,10 @@ export const queryAllWarehouse = () => {
     },
   });
 };
+
+// 查询库区总览
+export const queryTheOverview = (id) => {
+  return request({
+    url: `/api/area/overview/${id}`,
+  });
+};

@@ -39,3 +39,11 @@ export const addLocation = (data) => {
     data,
   });
 };
+
+// 查询全部库位详细信息
+export const queryAllLocation = (queryList) => {
+  return request({
+    url: "/api/location/listDetail",
+    params: queryList,
+  });
+};
