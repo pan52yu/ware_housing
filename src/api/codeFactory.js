@@ -32,3 +32,8 @@ export const HZForNextEncode = () => {
     url: `/api/codeFactory/next/HZ`,
   });
 };
+export const PDForNextEncode = () => {
+  return request({
+    url: `/api/codeFactory/next/PD`,
+  });
+};

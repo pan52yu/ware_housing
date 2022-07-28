@@ -94,6 +94,11 @@ const routes = [
               import("@/views/manage-business/GoodsOwner/components/details"),
           },
           {
+            path: "goods-owner/detail/:id",
+            component: () =>
+              import("@/views/manage-business/GoodsOwner/components/detail"),
+          },
+          {
             path: "task-picking",
             component: () => import("@/views/manage-business/task-picking"),
           },
@@ -105,7 +110,17 @@ const routes = [
         children: [
           {
             path: "list",
-            component: () => import("@/views/manage-storage/list"),
+            component: () => import("@/views/manage-storage/List/list"),
+          },
+          {
+            path: "list/details/:id",
+            component: () =>
+              import("@/views/manage-storage/List/components/details"),
+          },
+          {
+            path: "list/list-detail/:id",
+            component: () =>
+              import("@/views/manage-storage/List/components/list-detail"),
           },
           {
             path: "list-task",

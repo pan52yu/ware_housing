@@ -104,10 +104,25 @@
         ></el-table-column>
         <el-table-column fixed="right" label="操作" width="180">
           <template v-slot="scope">
-            <el-button type="text" @click="isStatus(scope.row)" size="small">
+            <el-button
+              type="text"
+              @click="
+                $router.push(
+                  `/manage-business/goods-owner/detail/${scope.row.id}`
+                )
+              "
+              size="small"
+            >
               查看详情
             </el-button>
-            <el-button @click="handleClick(scope.row)" type="text" size="small"
+            <el-button
+              @click="
+                $router.push(
+                  `/manage-business/goods-owner/details/${scope.row.id}`
+                )
+              "
+              type="text"
+              size="small"
               >编辑
             </el-button>
             <el-button
@@ -195,9 +210,6 @@ export default {
       const { data } = await pagingQueryGoodsOwner(this.warehouseFormLabel);
       this.tableData = data.data.records;
       this.total = data.data.total - 0;
-    },
-    handleClick(row) {
-      this.$router.push(`/manage-business/goods-owner/details/${row.id}`);
     },
     tableRowClassName({ rowIndex }) {
       if (rowIndex % 2 === 0) {

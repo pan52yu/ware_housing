@@ -2,8 +2,8 @@
   <div>
     <el-card>
       <el-steps :active="active" finish-status="finish">
-        <el-step title="基础信息"></el-step>
-        <el-step title="分配库位"></el-step>
+        <el-step title="填写基础信息"></el-step>
+        <el-step title="填写盘点清单"></el-step>
       </el-steps>
       <!--   第一步：新增或者编辑货主   -->
       <el-form
@@ -16,12 +16,12 @@
       >
         <el-row :gutter="30">
           <el-col :span="6">
-            <el-form-item label="货主编号" prop="code">
+            <el-form-item label="盘点单号" prop="code">
               <el-input disabled v-model="ruleForm.code"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="货主名称" prop="name">
+            <el-form-item label="盘点原因" prop="name">
               <el-input
                 clearable
                 placeholder="请输入"
@@ -30,7 +30,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="联系人" prop="personName">
+            <el-form-item label="盘点维度" prop="personName">
               <el-input
                 clearable
                 placeholder="请输入"
@@ -39,7 +39,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="联系人电话" prop="phone">
+            <el-form-item label="盘点类型" prop="phone">
               <el-input
                 clearable
                 placeholder="请输入"
@@ -51,7 +51,7 @@
         <!--    第二行    -->
         <el-row :gutter="30">
           <el-col :span="6">
-            <el-form-item label="联系人邮箱">
+            <el-form-item label="库区">
               <el-input
                 clearable
                 placeholder="请输入"
@@ -60,20 +60,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="省/市/区" prop="location">
-              <el-cascader
-                style="width: 100%"
-                size="large"
-                :options="options"
-                :props="{ expandTrigger: 'hover' }"
-                v-model="ruleForm.location"
-                @change="handleChange"
-              >
-              </el-cascader>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="详细地址" prop="address">
+            <el-form-item label="货主" prop="location">
               <el-input
                 clearable
                 placeholder="请输入"
@@ -81,16 +68,12 @@
               ></el-input>
             </el-form-item>
           </el-col>
-        </el-row>
-        <!--    第三行    -->
-        <el-row :gutter="30">
-          <el-col :span="12">
-            <el-form-item label="备注">
+          <el-col :span="6">
+            <el-form-item label="计划时间" prop="address">
               <el-input
                 clearable
-                type="textarea"
                 placeholder="请输入"
-                v-model="ruleForm.remark"
+                v-model="ruleForm.address"
               ></el-input>
             </el-form-item>
           </el-col>
@@ -234,7 +217,7 @@
 </template>
 
 <script>
-import { HZForNextEncode } from "@/api/codeFactory";
+import { PDForNextEncode } from "@/api/codeFactory";
 import {
   queryGoodsOwner,
   modifyGoodsOwner,
@@ -245,7 +228,6 @@ import {
   shipperBatchAssociatedLocation,
 } from "@/api/goods-owner";
 // 引入省市区
-import { regionDataPlus, CodeToText } from "element-china-area-data";
 import { queryAllWarehouse } from "@/api/area";
 
 export default {
@@ -253,7 +235,6 @@ export default {
   data() {
     return {
       active: 0,
-      options: regionDataPlus, // 省市区
       ruleForm: {
         code: "", // 仓库编码
         name: "", // 仓库名称
@@ -370,20 +351,9 @@ export default {
         if (this.$route.params.id !== "null") {
           const res = await queryGoodsOwner(this.$route.params.id);
           this.ruleForm = res.data.data;
-          if (
-            this.ruleForm.city === "119900" ||
-            this.ruleForm.city === "129900"
-          ) {
-            this.ruleForm.city = (this.ruleForm.city - 9800).toString();
-          }
-          this.ruleForm.location = [
-            this.ruleForm.province,
-            this.ruleForm.city,
-            this.ruleForm.area,
-          ];
         } else {
           // 是新增 查询code
-          const res = await HZForNextEncode();
+          const res = await PDForNextEncode();
           if (res.status !== 200) {
             return this.$message.error("获取code失败");
           }
@@ -396,16 +366,8 @@ export default {
     async next() {
       // 第一步提交新增或者编辑货主
       if (this.active === 0) {
-        this.$set(
-          this.ruleForm,
-          "location",
-          [
-            CodeToText[this.ruleForm.province],
-            CodeToText[this.ruleForm.city],
-            CodeToText[this.ruleForm.area],
-          ].join("/")
-        );
         try {
+          await this.$refs.ruleForm.validate();
           if (this.$route.params.id === "null") {
             await addGoodsOwner(this.ruleForm);
           } else {
@@ -420,7 +382,6 @@ export default {
         }
       } else {
         //   第二步 ：分配库位
-        this.$router.push("/manage-business/goods-owner");
       }
     },
     // 查询全部仓库列表
