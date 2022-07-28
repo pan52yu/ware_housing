@@ -85,7 +85,13 @@ const routes = [
         children: [
           {
             path: "goods-owner",
-            component: () => import("@/views/manage-business/goods-owner"),
+            component: () =>
+              import("@/views/manage-business/GoodsOwner/goods-owner"),
+          },
+          {
+            path: "goods-owner/details/:id",
+            component: () =>
+              import("@/views/manage-business/GoodsOwner/components/details"),
           },
           {
             path: "task-picking",
@@ -100,6 +106,19 @@ const routes = [
           {
             path: "list",
             component: () => import("@/views/manage-storage/list"),
+          },
+          {
+            path: "list-task",
+            component: () => import("@/views/manage-storage/list-task"),
+          },
+          {
+            path: "storage-lose-profit",
+            component: () =>
+              import("@/views/manage-storage/storage-lose-profit"),
+          },
+          {
+            path: "latest-storage",
+            component: () => import("@/views/manage-storage/latest-storage"),
           },
         ],
       },

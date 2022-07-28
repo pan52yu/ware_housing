@@ -26,3 +26,9 @@ export const HPForNextEncode = () => {
     url: `/api/codeFactory/next/HP`,
   });
 };
+
+export const HZForNextEncode = () => {
+  return request({
+    url: `/api/codeFactory/next/HZ`,
+  });
+};
