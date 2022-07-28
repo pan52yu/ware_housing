@@ -74,7 +74,8 @@ const routes = [
           },
           {
             path: "goods-type",
-            component: () => import("@/views/manage-base-info/goods-type"),
+            component: () =>
+              import("@/views/manage-base-info/GoodsType/goods-type"),
           },
         ],
       },
