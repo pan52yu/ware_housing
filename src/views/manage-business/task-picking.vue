@@ -8,22 +8,29 @@
       >
         <el-row>
           <el-col :span="6">
-            <el-form-item label="类型编号" prop="code">
+            <el-form-item label="承运商编号">
               <el-input
                 placeholder="请输入"
-                v-model="goodsTypeFormLabel.code"
+                v-model="goodsTypeFormLabel.like_code"
               ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="类型名称" prop="name">
+            <el-form-item label="承运商名称" prop="like_name">
               <el-input
                 placeholder="请输入"
-                v-model="goodsTypeFormLabel.name"
+                v-model="goodsTypeFormLabel.like_name"
               ></el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="6" style="visibility: hidden">占位</el-col>
+          <el-col :span="6">
+            <el-form-item label="联系人" prop="like_personName">
+              <el-input
+                placeholder="请输入"
+                v-model="goodsTypeFormLabel.like_personName"
+              ></el-input>
+            </el-form-item>
+          </el-col>
           <el-col class="submit" :span="6">
             <el-form-item>
               <el-button type="warning" @click.native="submitSearch" round
@@ -38,12 +45,6 @@
       </el-form>
     </el-card>
     <el-card class="table-card">
-      <el-row>
-        <span style="width: 30px; display: inline-block; height: 100%"></span>
-        <el-button type="success" @click="addGoodsType" round
-          >新增货品类型
-        </el-button>
-      </el-row>
       <!--   表格区域   -->
       <el-table
         v-if="tableData.length"
@@ -62,22 +63,14 @@
         style="width: 100%"
       >
         <el-table-column type="index" width="50" label="序号"></el-table-column>
-        <el-table-column prop="code" label="货品类型编号"></el-table-column>
-        <el-table-column prop="name" label="货品类型名称"></el-table-column>
+        <el-table-column prop="code" label="承运商编号"></el-table-column>
+        <el-table-column prop="name" label="承运商名称"></el-table-column>
+        <el-table-column prop="personName" label="联系人"></el-table-column>
+        <el-table-column prop="phone" label="联系人电话"></el-table-column>
+        <el-table-column prop="email" label="联系人邮箱"></el-table-column>
+        <el-table-column prop="location" label="省/市/区"></el-table-column>
+        <el-table-column prop="address" label="详细地址"></el-table-column>
         <el-table-column prop="updateTime" label="更新时间"></el-table-column>
-        <el-table-column label="操作">
-          <template v-slot="scope">
-            <el-button @click="handleClick(scope.row)" type="text" size="small"
-              >编辑
-            </el-button>
-            <el-button
-              @click="deleteWarehouse(scope.row)"
-              type="text"
-              size="small"
-              >删除
-            </el-button>
-          </template>
-        </el-table-column>
       </el-table>
       <!--   没数据时显示的   -->
       <div class="emptyTip" v-else>
@@ -98,110 +91,34 @@
         </el-pagination>
       </el-row>
     </el-card>
-    <el-dialog title="添加货品类型" :visible.sync="dialogVisible" width="30%">
-      <el-form
-        label-position="top"
-        :model="addItemType"
-        ref="addItemTypeRef"
-        :rules="addItemRef"
-      >
-        <el-form-item label="货品类型编码" prop="code">
-          <el-input
-            disabled
-            placeholder="请输入"
-            v-model="addItemType.code"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="货品类型名称" prop="name">
-          <el-input placeholder="请输入" v-model="addItemType.name"></el-input>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="clickOnAdd">确 定</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { HPForNextEncode } from "@/api/codeFactory";
-import {
-  addGoodsType,
-  pagingQueryGoodsType,
-  putGoodsType,
-  queryItemTypeManagement,
-} from "@/api/goodsType";
+import { pagingQueryCarrier } from "@/api/taskPicking";
 
 export default {
-  name: "goodsType",
+  name: "task-picking",
   data() {
     return {
       goodsTypeFormLabel: {
-        code: "",
-        name: "",
-        descs: "createTime",
+        like_code: "",
+        like_name: "",
+        like_personName: "",
         current: 1,
         size: 5,
       },
       total: 0,
       tableData: [],
-      dialogVisible: false,
-      addItemType: {
-        code: "",
-        name: "",
-      },
-      addItemRef: {
-        code: [{ required: true, message: "请输入货品类型编码" }],
-        name: [{ required: true, message: "请输入货品类型名称" }],
-      },
-      currentId: null,
     };
   },
   created() {
-    this.pagingQueryGoodsType();
+    this.pagingQueryCarrier();
   },
   methods: {
-    // 新增或者修改货品类型
-    async clickOnAdd() {
-      try {
-        if (this.currentId === null) {
-          //  新增
-          await addGoodsType(this.addItemType);
-          this.$message.success("新增货品类型成功！");
-        } else {
-          //  修改
-          await putGoodsType(this.addItemType);
-          this.$message.success("修改货品类型成功！");
-        }
-      } catch (e) {
-        this.$message.error("操作失败！");
-      }
-      this.dialogVisible = false;
-      await this.pagingQueryGoodsType();
-    },
-    // 点击新增按钮触发
-    addGoodsType() {
-      this.HPForNextEncode();
-      this.currentId = null;
-      this.dialogVisible = true;
-    },
-    // 获取货品code
-    async HPForNextEncode() {
-      const res = await HPForNextEncode();
-      this.addItemType.code = res.data.data;
-    },
-    // 删除
-    deleteWarehouse() {
-      this.$notify.info({
-        title: "提示",
-        duration: 3000,
-        message: "演示系统，不支持此操作",
-      });
-    },
     // 搜索
     submitSearch() {
-      this.pagingQueryGoodsType();
+      this.pagingQueryCarrier();
     },
     // 重置表单
     resetFields() {
@@ -209,24 +126,17 @@ export default {
     },
     handleCurrentChange(newPage) {
       this.goodsTypeFormLabel.current = newPage;
-      this.pagingQueryGoodsType();
+      this.pagingQueryCarrier();
     },
     handleSizeChange(newSize) {
       this.goodsTypeFormLabel.size = newSize;
-      this.pagingQueryGoodsType();
+      this.pagingQueryCarrier();
     },
     // 分页查询仓库
-    async pagingQueryGoodsType() {
-      const { data } = await pagingQueryGoodsType(this.goodsTypeFormLabel);
+    async pagingQueryCarrier() {
+      const { data } = await pagingQueryCarrier(this.goodsTypeFormLabel);
       this.tableData = data.data.records;
       this.total = data.data.total - 0;
-    },
-    async handleClick(row) {
-      console.log(row);
-      this.currentId = row.id;
-      const res = await queryItemTypeManagement(row.id);
-      this.addItemType = res.data.data;
-      this.dialogVisible = true;
     },
     // 表格隔行颜色
     tableRowClassName({ rowIndex }) {
@@ -272,7 +182,7 @@ export default {
   margin-top: 20px;
 
   .el-card__body {
-    padding: 20px 0 0 0 !important;
+    padding: 0 0 0 0 !important;
   }
 
   .el-table {

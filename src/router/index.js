@@ -80,6 +80,20 @@ const routes = [
         ],
       },
       {
+        path: "/manage-business",
+        component: () => import("@/views/manage-business/index"),
+        children: [
+          {
+            path: "goods-owner",
+            component: () => import("@/views/manage-business/goods-owner"),
+          },
+          {
+            path: "task-picking",
+            component: () => import("@/views/manage-business/task-picking"),
+          },
+        ],
+      },
+      {
         path: "/manage-storage",
         component: () => import("@/views/manage-storage"),
         children: [
