@@ -55,7 +55,7 @@
         <el-button
           @click="
             $router.push({
-              path: '/manage-base-info/warehouse/details.vue/null',
+              path: '/manage-base-info/warehouse/details/null',
             })
           "
           type="success"

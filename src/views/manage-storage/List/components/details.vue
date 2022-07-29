@@ -528,10 +528,10 @@ export default {
           await this.pagingQueryInventoryListingSubsidiary();
         } catch (e) {
           console.log(e);
-          await this.$router.push("/manage-storage/list");
         }
       } else {
         //   第二步 ：分配库位
+        await this.$router.push("/manage-storage/list");
       }
     },
     // 查询全部仓库列表

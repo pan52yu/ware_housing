@@ -35,7 +35,7 @@ const routes = [
               import("@/views/manage-base-info/Warehouse/warehouse"),
           },
           {
-            path: "warehouse/details.vue/:id",
+            path: "warehouse/details/:id",
             component: () =>
               import("@/views/manage-base-info/Warehouse/components/details"),
           },
@@ -124,7 +124,13 @@ const routes = [
           },
           {
             path: "list-task",
-            component: () => import("@/views/manage-storage/list-task"),
+            component: () =>
+              import("@/views/manage-storage/ListTask/list-task"),
+          },
+          {
+            path: "list-task/details/:id&:status&:logicDel",
+            component: () =>
+              import("@/views/manage-storage/ListTask/components/details"),
           },
           {
             path: "storage-lose-profit",
