@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card>
-      <el-steps :active="active" finish-status="finish">
+      <el-steps :active="active" finish-status="success">
         <el-step title="填写基础信息"></el-step>
         <el-step title="填写盘点清单"></el-step>
       </el-steps>
@@ -21,60 +21,93 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="盘点原因" prop="name">
-              <el-input
+            <el-form-item label="盘点原因" prop="reason">
+              <el-select
                 clearable
-                placeholder="请输入"
-                v-model="ruleForm.name"
-              ></el-input>
+                v-model="ruleForm.reason"
+                placeholder="请选择"
+                value=""
+              >
+                <el-option label="规划" value="GH"></el-option>
+                <el-option label="货主" value="HZ"></el-option>
+                <el-option label="差异" value="CY"></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="盘点维度" prop="personName">
-              <el-input
+            <el-form-item label="盘点维度" prop="dimension">
+              <el-select
                 clearable
-                placeholder="请输入"
-                v-model="ruleForm.personName"
-              ></el-input>
+                v-model="ruleForm.dimension"
+                placeholder="请选择"
+                value=""
+              >
+                <el-option label="库位" value="KW"></el-option>
+                <el-option label="货品" value="HP"></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="盘点类型" prop="phone">
-              <el-input
+            <el-form-item label="盘点类型" prop="type">
+              <el-select
                 clearable
-                placeholder="请输入"
-                v-model="ruleForm.phone"
-              ></el-input>
+                v-model="ruleForm.type"
+                placeholder="请选择"
+                value=""
+              >
+                <el-option label="随机盘点" value="SJPD"></el-option>
+                <el-option label="计划盘点" value="JHPD"></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
         <!--    第二行    -->
         <el-row :gutter="30">
           <el-col :span="6">
-            <el-form-item label="库区">
-              <el-input
+            <el-form-item
+              label="库区"
+              v-show="ruleForm.dimension === 'KW' || !ruleForm.dimension"
+            >
+              <el-cascader
                 clearable
-                placeholder="请输入"
-                v-model="ruleForm.email"
-              ></el-input>
+                v-model="ruleForm.areaId"
+                :options="treeList"
+                @change="handleChange2"
+              ></el-cascader>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="货主" prop="location">
-              <el-input
+            <el-form-item
+              label="货主"
+              prop="ownerId"
+              v-show="ruleForm.dimension === 'HP' || !ruleForm.dimension"
+            >
+              <el-select
                 clearable
-                placeholder="请输入"
-                v-model="ruleForm.address"
-              ></el-input>
+                v-model="ruleForm.ownerId"
+                placeholder="请选择"
+                value=""
+              >
+                <el-option
+                  v-for="item in ownerList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                ></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
             <el-form-item label="计划时间" prop="address">
-              <el-input
-                clearable
-                placeholder="请输入"
-                v-model="ruleForm.address"
-              ></el-input>
+              <el-date-picker
+                v-model="ruleForm.planCheckTime"
+                prefix-icon="el-icon-date"
+                value-format="yyyy-MM-dd hh:mm:ss"
+                type="datetime"
+                :picker-options="pickerOptions"
+                placeholder="选择日期时间"
+              >
+              </el-date-picker>
             </el-form-item>
           </el-col>
         </el-row>
@@ -89,17 +122,142 @@
       </el-form>
       <!--   第二步 ：分配库位  -->
       <div class="distributionTheReservoir" v-else>
+        <el-card style="margin: 30px 0 15px 0">
+          <el-row>
+            <el-button type="success" @click="addInventoryList" round
+              >添加盘点清单
+            </el-button>
+            <el-button round @click="cancellationDistribution"
+              >删除盘点清单
+            </el-button>
+          </el-row>
+          <!--   表格区域   -->
+          <el-table
+            @selection-change="handleSelectionChange"
+            v-if="tableData.length"
+            :data="tableData"
+            :header-cell-style="{
+              'text-align': 'center',
+              'background-color': '#f9f6ee',
+            }"
+            :cell-style="{
+              'text-align': 'center',
+              padding: '6px',
+              'font-size': '13px',
+            }"
+            border
+            style="width: 100%"
+          >
+            <el-table-column type="selection" width="55"></el-table-column>
+            <el-table-column
+              type="index"
+              width="50"
+              label="序号"
+            ></el-table-column>
+            <el-table-column
+              prop="warehouseName"
+              label="仓库名称"
+            ></el-table-column>
+            <el-table-column prop="areaName" label="库区名称"></el-table-column>
+            <el-table-column
+              prop="locationCode"
+              label="库位编号"
+            ></el-table-column>
+            <el-table-column
+              prop="locationName"
+              label="库位名称"
+            ></el-table-column>
+            <el-table-column fixed="right" label="操作" width="180">
+              <template>
+                <el-button
+                  type="text"
+                  @click="cancellationDistribution"
+                  size="small"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!--   没数据时显示的   -->
+          <div class="emptyTip" v-else>
+            <span class="imgIcon"></span>
+            <p>暂无盘点清单</p>
+          </div>
+          <!--   分页   -->
+          <el-row type="flex" justify="center" v-if="tableData.length">
+            <el-pagination
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="queryList.current"
+              :page-sizes="[5, 10, 30, 40]"
+              :page-size="queryList.size"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="total"
+            >
+            </el-pagination>
+          </el-row>
+        </el-card>
         <el-row>
-          <el-button type="success" @click="dialogVisible = true" round
-            >分配库位
-          </el-button>
-          <el-button round @click="unassignAll">取消分配</el-button>
+          <div class="buttonBox" style="text-align: center">
+            <el-button @click="active--" round>上一步</el-button>
+            <el-button @click.native="next" type="warning" round
+              >提交
+            </el-button>
+          </div>
         </el-row>
-        <!--   表格区域   -->
+      </div>
+    </el-card>
+    <!--  添加盘点清单对话框  -->
+    <el-dialog title="提示" :visible.sync="dialogVisible" width="60%">
+      <el-card>
+        <el-form
+          label-position="top"
+          :model="queryInventoryList"
+          ref="ListFormRef"
+        >
+          <el-row :gutter="30">
+            <el-col :span="6" v-show="ruleForm.dimension === 'KW'">
+              <el-form-item label="库位名称" prop="locationName">
+                <el-input
+                  placeholder="请输入"
+                  v-model="queryInventoryList.locationName"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6" v-show="ruleForm.dimension === 'KW'">
+              <el-form-item label="库位编号" prop="locationCode">
+                <el-input
+                  placeholder="请输入"
+                  v-model="queryInventoryList.locationCode"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <!--            货品名称-->
+            <el-col :span="12" v-show="ruleForm.dimension === 'HP'">
+              <el-form-item label="货品名称" prop="goodsName">
+                <el-input
+                  placeholder="请输入"
+                  v-model="queryInventoryList.goodsName"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col class="submit" :span="6">
+              <el-form-item>
+                <el-button @click="addInventoryList" type="warning" round
+                  >搜索
+                </el-button>
+                <el-button type="info" @click="resetFields" plain round
+                  >重置
+                </el-button>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
         <el-table
-          @selection-change="handleSelectionChange"
-          v-if="tableData.length"
-          :data="tableData"
+          v-if="tableDataList.length"
+          :data="tableDataList"
+          @selection-change="ListSelectionChange"
           :header-cell-style="{
             'text-align': 'center',
             'background-color': '#f9f6ee',
@@ -118,99 +276,52 @@
             width="50"
             label="序号"
           ></el-table-column>
+          <el-table-column prop="locationName" label="仓库名称" width="150">
+          </el-table-column>
+          <el-table-column prop="areaName" label="库区名称" width="150">
+          </el-table-column>
+          <el-table-column prop="locationCode" label="库位编号" width="180">
+          </el-table-column>
+          <el-table-column prop="locationName" label="库位名称" width="120">
+          </el-table-column>
           <el-table-column
-            prop="warehouseName"
-            label="仓库名称"
-          ></el-table-column>
-          <el-table-column prop="areaName" label="库区名称"></el-table-column>
-          <el-table-column
-            prop="locationCode"
-            label="库位编号"
+            prop="goodsTypeName"
+            label="货品名称"
+            width="120"
           ></el-table-column>
           <el-table-column
-            prop="locationName"
-            label="库位名称"
+            prop="goodsCode"
+            label="货品编号"
+            width="120"
           ></el-table-column>
-          <el-table-column fixed="right" label="操作" width="180">
-            <template v-slot="scope">
-              <el-button
-                type="text"
-                @click="cancellationDistribution(scope.row)"
-                size="small"
-              >
-                取消分配
-              </el-button>
-            </template>
+          <el-table-column prop="goodsBarCode" label="货品条码" width="120">
+          </el-table-column>
+          <el-table-column prop="ownerName" label="货主名称" width="120">
+          </el-table-column>
+          <el-table-column prop="total" label="库存数量" width="120">
           </el-table-column>
         </el-table>
-        <!--   没数据时显示的   -->
-        <div class="emptyTip" v-else>
-          <span class="imgIcon"></span>
-          <p>暂无仓库</p>
-        </div>
         <!--   分页   -->
-        <el-row type="flex" justify="center">
+        <el-row type="flex" justify="center" v-if="tableDataList.length">
           <el-pagination
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page="queryList.current"
+            @size-change="handleSizeChange2"
+            @current-change="handleCurrentChange2"
+            :current-page="queryInventoryList.current"
             :page-sizes="[5, 10, 30, 40]"
-            :page-size="queryList.size"
+            :page-size="queryInventoryList.size"
             layout="total, sizes, prev, pager, next, jumper"
-            :total="total"
+            :total="total2"
           >
           </el-pagination>
         </el-row>
-        <el-row>
-          <div class="buttonBox" style="text-align: center">
-            <el-button @click="active--" round>上一步</el-button>
-            <el-button @click.native="next" type="warning" round
-              >提交
-            </el-button>
-          </div>
-        </el-row>
-      </div>
-    </el-card>
-    <!--  分配库区对话框  -->
-    <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
-      <el-cascader
-        clearable
-        v-model="value"
-        :options="treeList"
-        :props="{ multiple: true }"
-        @change="handleChange2"
-      ></el-cascader>
+        <div class="emptyTip" v-else>
+          <span class="imgIcon"></span>
+          <p>暂无库存</p>
+        </div>
+      </el-card>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="distributionTheReservoir"
-          >确 定</el-button
-        >
-      </span>
-    </el-dialog>
-    <!--  取消分配对话框  -->
-    <el-dialog
-      title="取消分配确认"
-      :visible.sync="cancelAssignmentDialogBox"
-      width="30%"
-    >
-      <span>确认取消货主的库位：{{ currentList.locationName }}吗？</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="cancelAssignmentDialogBox = false">取 消</el-button>
-        <el-button type="primary" @click="unassign">确 定</el-button>
-      </span>
-    </el-dialog>
-    <!--  取消所有分配对话框  -->
-    <el-dialog
-      title="取消分配确认"
-      :visible.sync="cancelAssignmentDialogBoxAll"
-      width="30%"
-    >
-      <span>确认要取消分配吗？</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="cancelAssignmentDialogBoxAll = false"
-          >取 消</el-button
-        >
-        <el-button type="primary" @click="delAll">确 定</el-button>
+        <el-button type="primary" @click="batchAddList">确认添加</el-button>
       </span>
     </el-dialog>
   </div>
@@ -218,17 +329,17 @@
 
 <script>
 import { PDForNextEncode } from "@/api/codeFactory";
-import {
-  queryGoodsOwner,
-  modifyGoodsOwner,
-  addGoodsOwner,
-  queryOwnerAssociativeTableLocation,
-  queryTheTreeLocation,
-  deleteOwnerAssociativeTableLocation,
-  shipperBatchAssociatedLocation,
-} from "@/api/goods-owner";
-// 引入省市区
+import { queryTheTreeLocation } from "@/api/goods-owner";
 import { queryAllWarehouse } from "@/api/area";
+import {
+  queryInventoryListById,
+  modifyList,
+  addList,
+  queryAllOwnersManagement,
+  pagingQueryInventoryListingSubsidiary,
+  pagingQueryDetailedInventory,
+  batchAddList,
+} from "@/api/list";
 
 export default {
   name: "Details",
@@ -237,8 +348,7 @@ export default {
       active: 0,
       ruleForm: {
         code: "", // 仓库编码
-        name: "", // 仓库名称
-        phone: "", // 联系电话
+        status: 1,
       },
       rules: {
         code: [
@@ -278,9 +388,20 @@ export default {
       queryList: {
         current: 1,
         size: 10,
-        ownerId: this.$route.params.id,
+        masterId: "",
       },
+      // 分页查询明细库存
+      queryInventoryList: {
+        current: 1,
+        locationCode: "", // 库位编码
+        locationName: "", //库位名称
+        size: 10,
+        needFree: 1,
+        areaId: "",
+      },
+      tableDataList: [],
       total: 0,
+      total2: 0,
       dialogVisible: false,
       treeList: [],
       // 选中的库位数组
@@ -289,67 +410,86 @@ export default {
       // 当前的库位
       currentList: [],
       cancelAssignmentDialogBox: false,
+      ownerList: [],
+      addBatchList: [],
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() < new Date().getTime() - 86400000;
+        },
+      },
     };
   },
   created() {
-    this.queryGoodsOwner();
-    this.queryList.ownerId = this.$route.params.id;
+    this.queryInventoryListById();
+    this.queryAllWarehouse();
+    this.queryAllOwnersManagement();
   },
   methods: {
+    // 批量新增盘点清单
+    async batchAddList() {
+      if (this.addBatchList.length <= 0) {
+        return this.$message.error("请勾选商品");
+      }
+      try {
+        await batchAddList({
+          masterId: this.queryList.masterId,
+          stockIds: this.addBatchList,
+        });
+        this.dialogVisible = false;
+        this.addBatchList = [];
+        this.$message.success("添加成功");
+        await this.addInventoryList();
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    // 重置表单
+    resetFields() {
+      this.$refs.ListFormRef.resetFields();
+      this.addInventoryList();
+    },
+    async addInventoryList() {
+      this.dialogVisible = true;
+      const { data } = await pagingQueryDetailedInventory(
+        this.queryInventoryList
+      );
+      this.tableDataList = data.data.records;
+      this.total2 = data.data.total - 0;
+    },
+    async queryAllOwnersManagement() {
+      const res = await queryAllOwnersManagement();
+      console.log(res);
+      res.data.data.forEach((item) => {
+        this.ownerList.push({
+          id: item.id,
+          name: item.name,
+        });
+      });
+    },
     handleSelectionChange(val) {
       this.multipleSelection = val;
       console.log(val);
     },
-    // 对话框变化
-    handleChange2() {
-      this.value.forEach((item, index) => {
-        this.value[index] = item.join(",");
+    ListSelectionChange(val) {
+      this.addBatchList = [];
+      val.forEach((item) => {
+        this.addBatchList.push(item.id);
       });
     },
-    // 分配库区
-    async distributionTheReservoir() {
-      try {
-        await shipperBatchAssociatedLocation(this.value, this.$route.params.id);
-        this.$message.success("分配成功");
-      } catch (e) {
-        console.log(e);
-      }
-      this.dialogVisible = false;
+    // 对话框变化
+    handleChange2(...args) {
+      this.ruleForm.warehouseId = args[0][0];
+      this.ruleForm.areaId = args[0][1];
     },
     // 点击每行取消分配
-    cancellationDistribution(row) {
-      this.currentList = row;
-      this.cancelAssignmentDialogBox = true;
+    cancellationDistribution() {
+      this.$message.error("演示系统，不支持此操作");
     },
-    async unassign() {
-      this.cancelAssignmentDialogBox = false;
-      const res = await deleteOwnerAssociativeTableLocation([
-        this.currentList.id,
-      ]);
-      console.log(res);
-    },
-    unassignAll() {
-      if (!this.multipleSelection.length) {
-        this.$message.warning("请选择要取消的数据");
-      } else {
-        this.cancelAssignmentDialogBoxAll = true;
-      }
-    },
-    async delAll() {
-      let allListId = [];
-      this.multipleSelection.forEach((item) => {
-        allListId.push(item.id);
-      });
-      const res = await deleteOwnerAssociativeTableLocation(allListId);
-      console.log(res);
-      this.cancelAssignmentDialogBoxAll = false;
-      await this.queryOwnerAssociativeTableLocation();
-    },
-    async queryGoodsOwner() {
+    async queryInventoryListById() {
       try {
         // 不是新增就是编辑 发查询请求
         if (this.$route.params.id !== "null") {
-          const res = await queryGoodsOwner(this.$route.params.id);
+          const res = await queryInventoryListById(this.$route.params.id);
           this.ruleForm = res.data.data;
         } else {
           // 是新增 查询code
@@ -369,16 +509,26 @@ export default {
         try {
           await this.$refs.ruleForm.validate();
           if (this.$route.params.id === "null") {
-            await addGoodsOwner(this.ruleForm);
+            const { data } = await addList(this.ruleForm);
+            this.queryList.masterId = data.data.id;
+            this.queryInventoryList.areaId = data.data.areaId;
           } else {
-            await modifyGoodsOwner(this.ruleForm);
+            if (this.ruleForm.dimension === "KW") {
+              this.ruleForm.ownerId = null;
+            } else {
+              this.ruleForm.areaId = null;
+              this.ruleForm.warehouseId = null;
+            }
+            const { data } = await modifyList(this.ruleForm);
+            this.queryList.masterId = data.data.id;
+            this.queryInventoryList.areaId = data.data.areaId;
           }
           this.$message.success("恭喜你，提交成功！");
           this.active++;
-          await this.queryOwnerAssociativeTableLocation();
-          await this.queryAllWarehouse();
+          await this.pagingQueryInventoryListingSubsidiary();
         } catch (e) {
           console.log(e);
+          await this.$router.push("/manage-storage/list");
         }
       } else {
         //   第二步 ：分配库位
@@ -396,24 +546,39 @@ export default {
           children: [],
         });
       });
-      for (let i = 0; i < res.data.data.length; i++) {
-        const { data } = await queryTheTreeLocation(res.data.data[i].id);
-        this.treeList[i].children = data.data;
+      if (this.active === 0) {
+        for (let i = 0; i < res.data.data.length; i++) {
+          const { data } = await queryTheTreeLocation(res.data.data[i].id);
+          data.data.forEach((item) => {
+            delete item.children;
+            this.treeList[i].children.push(item);
+          });
+        }
       }
     },
     // 库位列表
-    async queryOwnerAssociativeTableLocation() {
-      const { data } = await queryOwnerAssociativeTableLocation(this.queryList);
+    async pagingQueryInventoryListingSubsidiary() {
+      const { data } = await pagingQueryInventoryListingSubsidiary(
+        this.queryList
+      );
       this.tableData = data.data.records;
       this.total = data.data.total - 0;
     },
     handleSizeChange(newPage) {
       this.queryList.size = newPage;
-      this.queryOwnerAssociativeTableLocation();
+      this.pagingQueryInventoryListingSubsidiary();
     },
     handleCurrentChange(newSize) {
       this.queryList.current = newSize;
-      this.queryOwnerAssociativeTableLocation();
+      this.pagingQueryInventoryListingSubsidiary();
+    },
+    handleSizeChange2(newPage) {
+      this.queryInventoryList.size = newPage;
+      this.pagingQueryInventoryListingSubsidiary();
+    },
+    handleCurrentChange2(newSize) {
+      this.queryInventoryList.current = newSize;
+      this.pagingQueryInventoryListingSubsidiary();
     },
     handleChange(value) {
       //value代表每个地方的区域码
@@ -427,11 +592,16 @@ export default {
 
 <style lang="less" scoped>
 .el-table {
-  margin: 30px 0;
+  margin: 50px 0;
 }
 
 .el-pagination {
   margin-bottom: 30px;
+}
+
+.el-select,
+el-cascader {
+  width: 100%;
 }
 
 .el-steps {

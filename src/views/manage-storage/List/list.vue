@@ -262,10 +262,20 @@
             >
               修改详情
             </el-button>
-            <el-button v-show="scope.row.status === 1" type="text" size="small">
+            <el-button
+              @click="generateTask(scope.row)"
+              v-show="scope.row.status === 1"
+              type="text"
+              size="small"
+            >
               生成盘点任务
             </el-button>
-            <el-button v-show="scope.row.status === 1" type="text" size="small">
+            <el-button
+              @click="cancelList(scope.row)"
+              v-show="scope.row.status === 1"
+              type="text"
+              size="small"
+            >
               取消
             </el-button>
           </template>
@@ -305,11 +315,27 @@
         >
       </span>
     </el-dialog>
+    <!--  取消盘点单对话框  -->
+    <el-dialog title="确认取消" :visible.sync="cancelListVisible" width="30%">
+      <span
+        >确定要取消盘点单号为为：{{ this.currentList.code }} 的盘点单吗？</span
+      >
+      <span slot="footer" class="dialog-footer">
+        <el-button round @click="cancelListVisible = false">取 消</el-button>
+        <el-button round type="primary" @click="cancelCurrentList"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { generateCountingTask, queryAllOwnersManagement } from "@/api/list";
+import {
+  cancelInventoryList,
+  generateCountingTask,
+  queryAllOwnersManagement,
+} from "@/api/list";
 import { queryAllWarehouse } from "@/api/area";
 import { queryAllArea } from "@/api/location";
 import { pagingQueryList } from "@/api/list";
@@ -330,6 +356,8 @@ export default {
       dialogVisible: false,
       countingTaskList: [],
       errList: "",
+      currentList: {}, // 取消盘点单的code和id
+      cancelListVisible: false, //取消盘点单对话框
     };
   },
   created() {
@@ -338,6 +366,29 @@ export default {
     this.queryAllWarehouse();
   },
   methods: {
+    cancelList(row) {
+      this.currentList = {
+        code: row.code,
+        id: row.id,
+      };
+      this.cancelListVisible = true;
+    },
+    async cancelCurrentList() {
+      try {
+        await cancelInventoryList(this.currentList.id);
+        this.$message.success("取消成功");
+        this.pagingQueryList();
+        this.cancelListVisible = false;
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    async generateTask(row) {
+      const res = await generateCountingTask([row.id]);
+      this.countingTaskList = res.data.data.errors;
+      this.errList = this.countingTaskList.join("、");
+      this.dialogVisible = true;
+    },
     // 生成盘点任务
     async generateCountingTask() {
       if (!this.multipleSelection.length) {

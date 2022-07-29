@@ -38,3 +38,53 @@ export const pagingQueryInventoryListingSubsidiary = (list) => {
     params: list,
   });
 };
+// 分页查询明细库存
+export const pagingQueryDetailedInventory = (list) => {
+  return request({
+    url: "/ips/stock/pageDetail",
+    params: list,
+  });
+};
+// 查询盘点单
+export const queryInventoryListById = (id) => {
+  return request({
+    url: `/ips/check/${id}`,
+  });
+};
+
+// 修改盘点单
+export const modifyList = (queryList) => {
+  return request({
+    url: "/ips/check",
+    method: "PUT",
+    data: queryList,
+  });
+};
+
+// 新增盘点单
+export const addList = (data) => {
+  return request({
+    url: "/ips/check",
+    method: "POST",
+    data,
+  });
+};
+
+// 批量新增盘点清单
+export const batchAddList = (data) => {
+  return request({
+    url: "/ips/checkList/batch",
+    method: "POST",
+    data,
+  });
+};
+// 取消盘点单
+export const cancelInventoryList = (id) => {
+  return request({
+    url: "/ips/check/cancel",
+    method: "PUT",
+    data: {
+      id,
+    },
+  });
+};
