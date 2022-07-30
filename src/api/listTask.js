@@ -60,3 +60,25 @@ export const pagingQueryLossesTheSingleDetail = (list) => {
     params: list,
   });
 };
+
+// 调整库存
+export const adjustStock = (id) => {
+  return request({
+    url: "/ips/increaseDecrease/change",
+    method: "PUT",
+    data: {
+      id,
+    },
+  });
+};
+
+// 取消调整
+export const cancelAdjustment = (id) => {
+  return request({
+    url: "/ips/increaseDecrease/cancel",
+    method: "PUT",
+    data: {
+      id,
+    },
+  });
+};

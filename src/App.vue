@@ -9,22 +9,26 @@ export default {
 };
 </script>
 <style lang="less">
+.el-table--scrollable-x .el-table__body-wrapper {
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+}
+
 ::-webkit-scrollbar {
-  background-color: #efebea;
-  border-radius: 10px;
-  width: 10px; //y轴滚动条宽度
-  height: 10px; //x轴滚动条高度
+  width: 12px;
+  height: 12px;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
 }
 
-/*定义滑块 内阴影*/
+/* Scroll bar slider */
 ::-webkit-scrollbar-thumb {
-  border-radius: 10px; //滚动条的圆角
-  background: #efebea; //滚动条的背景颜色
+  border-radius: 8px;
+  background: #efebea;
+  //-webkit-box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
-/*定义滚动条轨道 内阴影*/
-::-webkit-scrollbar-track {
-  border-radius: 10px; //滚动条的背景区域的圆角
-  background: #fff; //滚动条的背景颜色
+::-webkit-scrollbar-thumb:hover {
+  background: #e0d8d6;
 }
 </style>
