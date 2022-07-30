@@ -1,10 +1,10 @@
 <template>
-  <div>List</div>
+  <div class="task-add">task-add</div>
 </template>
 
 <script>
 export default {
-  name: "List",
+  name: "task-add",
   data() {
     return {};
   },

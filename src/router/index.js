@@ -143,6 +143,41 @@ const routes = [
           },
         ],
       },
+      {
+        path: "/manage-storage-in",
+        component: () => import("@/views/manage-storage-in"),
+        children: [
+          {
+            path: "list-in/list",
+            component: () =>
+              import("@/views/manage-storage-in/list-in/List/list"),
+          },
+          {
+            path: "list-in/list/list-detail/:id",
+            component: () =>
+              import(
+                "@/views/manage-storage-in/list-in/List/components/list-detail"
+              ),
+          },
+          {
+            path: "list-in/list/details/:id",
+            component: () =>
+              import(
+                "@/views/manage-storage-in/list-in/List/components/details"
+              ),
+          },
+          {
+            path: "list-in/task-receive",
+            component: () =>
+              import("@/views/manage-storage-in/list-in/task-receive"),
+          },
+          {
+            path: "list-in/task-add",
+            component: () =>
+              import("@/views/manage-storage-in/list-in/task-add"),
+          },
+        ],
+      },
     ],
   },
 ];

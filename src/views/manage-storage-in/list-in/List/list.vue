@@ -8,7 +8,7 @@
       >
         <el-row :gutter="30">
           <el-col :span="6">
-            <el-form-item label="盘点单号" prop="code">
+            <el-form-item label="入库单号" prop="code">
               <el-input
                 placeholder="请输入"
                 v-model="listFormLabel.code"
@@ -16,31 +16,19 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="盘点状态" prop="status">
-              <el-select
-                v-model="listFormLabel.status"
-                placeholder="请选择"
-                value=""
-              >
-                <el-option label="新建" value="1"></el-option>
-                <el-option label="一盘中" value="2"></el-option>
-                <el-option label="一盘完成" value="3"></el-option>
-                <el-option label="复盘中" value="4"></el-option>
-                <el-option label="复盘完成" value="5"></el-option>
-                <el-option label="已取消" value="6"></el-option>
-              </el-select>
+            <el-form-item label="运单编号" prop="billCode">
+              <el-input
+                placeholder="请输入"
+                v-model="listFormLabel.billCode"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="盘点类型" prop="type">
-              <el-select
-                v-model="listFormLabel.type"
-                placeholder="请选择"
-                value=""
-              >
-                <el-option label="随机盘点" value="SJPD"></el-option>
-                <el-option label="计划盘点" value="JHPD"></el-option>
-              </el-select>
+            <el-form-item label="货主名称" prop="ownerName">
+              <el-input
+                placeholder="请输入"
+                v-model="listFormLabel.ownerName"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col class="submit" :span="6">
@@ -54,34 +42,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row :gutter="30">
-          <el-col :span="6">
-            <el-form-item label="货主" prop="ownerId">
-              <el-select
-                v-model="listFormLabel.ownerId"
-                placeholder="请选择"
-                value=""
-              >
-                <el-option
-                  v-for="item in shipperList"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="盘点库区">
-              <el-cascader
-                style="width: 100%"
-                v-model="listFormLabel.areaId"
-                :options="cascaderList"
-                @expand-change="handleChange2"
-              ></el-cascader>
-            </el-form-item>
-          </el-col>
-        </el-row>
       </el-form>
     </el-card>
     <el-card class="table-card">
@@ -90,18 +50,18 @@
         <el-button
           @click="
             $router.push({
-              path: '/manage-storage/list/details/null',
+              path: '/manage-storage-in/list-in/list/details/null',
             })
           "
           type="success"
           round
-          >新增盘点单
+          >新增入库单
         </el-button>
         <el-button
-          @click="generateCountingTask"
+          @click="generateReceivingTask"
           style="background-color: #f8f5f5"
           round
-          >生成盘点任务
+          >生成收货任务
         </el-button>
       </el-row>
       <!--   表格区域   -->
@@ -126,157 +86,75 @@
         <el-table-column type="index" width="50" label="序号"></el-table-column>
         <el-table-column
           prop="code"
-          label="盘点单号"
+          label="入库单号"
           width="160"
         ></el-table-column>
         <el-table-column
-          prop="ownerName"
-          label="货主"
+          prop="billCode"
+          label="运单编号"
           width="160"
         ></el-table-column>
         <el-table-column
-          :filters="[
-            { text: '新建', value: 1 },
-            { text: '一盘中', value: 2 },
-            { text: '一盘完成', value: 3 },
-            { text: '复盘中', value: 4 },
-            { text: '复盘完成', value: 5 },
-            { text: '已取消', value: 6 },
-          ]"
-          :filter-method="filterStatus"
-          prop="status"
-          label="盘点单状态"
-          width="160"
+          prop="planArrivalTime"
+          label="计划到达时间"
+          width="200"
         >
+        </el-table-column>
+        <el-table-column
+          sortable
+          prop="ownerCode"
+          label="货主编号"
+          width="160"
+        ></el-table-column>
+        <el-table-column
+          sortable
+          prop="ownerName"
+          label="货主名称"
+          width="160"
+        ></el-table-column>
+        <el-table-column prop="warehouseName" label="仓库名称" width="160">
+        </el-table-column>
+        <el-table-column prop="license" label="车牌号" width="160">
+        </el-table-column>
+        <el-table-column prop="deliveryName" label="送货人名称" width="160">
+        </el-table-column>
+        <el-table-column prop="deliveryPhone" label="送货人电话" width="160">
+        </el-table-column>
+        <el-table-column prop="status" label="入库单状态" width="160">
           <template v-slot="scope">
             {{
               scope.row.status === 1
                 ? "新建"
                 : scope.row.status === 2
-                ? "一盘中"
+                ? "收货中"
                 : scope.row.status === 3
-                ? "一盘完成"
+                ? "已取消"
                 : scope.row.status === 4
-                ? "复盘中"
+                ? "收货完成"
                 : scope.row.status === 5
-                ? "复盘完成"
-                : "已取消"
+                ? "上架中"
+                : "上架完成"
             }}
           </template>
         </el-table-column>
-        <el-table-column
-          sortable
-          prop="createTime"
-          label="创建时间"
-          width="180"
-        ></el-table-column>
-        <el-table-column
-          sortable
-          prop="planCheckTime"
-          label="计划盘点时间"
-          width="180"
-        ></el-table-column>
-        <el-table-column
-          :filters="[
-            { text: '规划', value: 'GH' },
-            { text: '货主', value: 'HZ' },
-            { text: '差异', value: 'CY' },
-          ]"
-          :filter-method="filterReason"
-          prop="reason"
-          label="盘点原因"
-          width="160"
-        >
-          <template v-slot="scope">
-            {{
-              scope.row.reason === "GH"
-                ? "规划"
-                : scope.row.reason === "HZ"
-                ? "货主"
-                : "差异"
-            }}
-          </template>
+        <el-table-column prop="planNum" label="预计到货数" width="160">
         </el-table-column>
-        <el-table-column
-          :filters="[
-            { text: '库位', value: 'KW' },
-            { text: '货品', value: 'HP' },
-          ]"
-          :filter-method="filterDimension"
-          prop="dimension"
-          label="盘点维度"
-          width="160"
-        >
-          <template v-slot="scope">
-            {{ scope.row.dimension === "KW" ? "库位" : "货品" }}
-          </template>
+        <el-table-column prop="createName" label="创建人" width="160">
         </el-table-column>
-        <el-table-column
-          :filters="[
-            { text: '随机盘点', value: 'SJPD' },
-            { text: '计划盘点', value: 'JHPD' },
-          ]"
-          :filter-method="filterType"
-          prop="type"
-          label="盘点类型"
-          width="160"
-        >
-          <template v-slot="scope">
-            {{ scope.row.type === "SJPD" ? "随机盘点" : "计划盘点" }}
-          </template>
+        <el-table-column prop="createTime" label="创建时间" width="200">
         </el-table-column>
-        <el-table-column
-          prop="warehouseName"
-          label="盘点仓库"
-          width="160"
-        ></el-table-column>
-        <el-table-column
-          prop="areaName"
-          label="盘点库区"
-          width="160"
-        ></el-table-column>
-        <el-table-column
-          prop="createName"
-          label="创建人"
-          width="160"
-        ></el-table-column>
         <el-table-column fixed="right" label="操作" width="220">
           <template v-slot="scope">
             <el-button
-              v-show="scope.row.status !== 1"
               type="text"
               @click="
-                $router.push(`/manage-storage/list/list-detail/${scope.row.id}`)
+                $router.push(
+                  `/manage-storage-in/list-in/list/list-detail/${scope.row.id}`
+                )
               "
               size="small"
             >
               查看详情
-            </el-button>
-            <el-button
-              @click="
-                $router.push(`/manage-storage/list/details/${scope.row.id}`)
-              "
-              v-show="scope.row.status === 1"
-              type="text"
-              size="small"
-            >
-              修改详情
-            </el-button>
-            <el-button
-              @click="generateTask(scope.row)"
-              v-show="scope.row.status === 1"
-              type="text"
-              size="small"
-            >
-              生成盘点任务
-            </el-button>
-            <el-button
-              @click="cancelList(scope.row)"
-              v-show="scope.row.status === 1"
-              type="text"
-              size="small"
-            >
-              取消
             </el-button>
           </template>
         </el-table-column>
@@ -315,36 +193,23 @@
         >
       </span>
     </el-dialog>
-    <!--  取消盘点单对话框  -->
-    <el-dialog title="确认取消" :visible.sync="cancelListVisible" width="30%">
-      <span
-        >确定要取消盘点单号为为：{{ this.currentList.code }} 的盘点单吗？</span
-      >
-      <span slot="footer" class="dialog-footer">
-        <el-button round @click="cancelListVisible = false">取 消</el-button>
-        <el-button round type="primary" @click="cancelCurrentList"
-          >确 定</el-button
-        >
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import {
-  cancelInventoryList,
-  generateCountingTask,
-  queryAllOwnersManagement,
-} from "@/api/list";
+import { queryAllOwnersManagement } from "@/api/list";
 import { queryAllWarehouse } from "@/api/area";
 import { queryAllArea } from "@/api/location";
-import { pagingQueryList } from "@/api/list";
+import { pagingQueryListIn, generateReceivingTask } from "@/api/list-in";
 
 export default {
   name: "List",
   data() {
     return {
       listFormLabel: {
+        code: "",
+        billCode: "",
+        ownerName: "",
         current: 1,
         size: 10,
       },
@@ -356,48 +221,27 @@ export default {
       dialogVisible: false,
       countingTaskList: [],
       errList: "",
-      currentList: {}, // 取消盘点单的code和id
-      cancelListVisible: false, //取消盘点单对话框
     };
   },
   created() {
-    this.pagingQueryList();
+    this.pagingQueryListIn();
     this.queryAllOwnersManagement();
     this.queryAllWarehouse();
   },
   methods: {
-    cancelList(row) {
-      this.currentList = {
-        code: row.code,
-        id: row.id,
-      };
-      this.cancelListVisible = true;
-    },
-    async cancelCurrentList() {
-      try {
-        await cancelInventoryList(this.currentList.id);
-        this.$message.success("取消成功");
-        await this.pagingQueryList();
-        this.cancelListVisible = false;
-      } catch (e) {
-        console.log(e);
-      }
-    },
-    async generateTask(row) {
-      const res = await generateCountingTask([row.id]);
-      this.countingTaskList = res.data.data.errors;
-      this.errList = this.countingTaskList.join("、");
-      this.dialogVisible = true;
+    click(row) {
+      console.log(row);
     },
     // 生成盘点任务
-    async generateCountingTask() {
+    async generateReceivingTask() {
       if (!this.multipleSelection.length) {
-        this.$message.error("请选择盘点单");
+        this.$message.error("请选择入库单");
       } else {
-        const res = await generateCountingTask(this.multipleSelection);
+        const res = await generateReceivingTask(this.multipleSelection);
         this.countingTaskList = res.data.data.errors;
         this.errList = this.countingTaskList.join("、");
         this.dialogVisible = true;
+        await this.pagingQueryListIn();
       }
     },
     handleSelectionChange(val) {
@@ -406,18 +250,6 @@ export default {
         this.multipleSelection.push(item.id);
       });
       console.log(val);
-    },
-    filterStatus(value, row) {
-      return row.status === value;
-    },
-    filterReason(value, row) {
-      return row.reason === value;
-    },
-    filterDimension(value, row) {
-      return row.dimension === value;
-    },
-    filterType(value, row) {
-      return row.type === value;
     },
     async queryAllWarehouse() {
       const res = await queryAllWarehouse();
@@ -475,24 +307,24 @@ export default {
       if (this.listFormLabel.areaId) {
         this.listFormLabel.areaId = this.listFormLabel.areaId[1];
       }
-      this.pagingQueryList();
+      this.pagingQueryListIn();
     },
     // 重置表单
     resetFields() {
       this.$refs.warehouseFormRef.resetFields();
-      this.pagingQueryList();
+      this.pagingQueryListIn();
     },
     handleCurrentChange(newPage) {
       this.listFormLabel.current = newPage;
-      this.pagingQueryList();
+      this.pagingQueryListIn();
     },
     handleSizeChange(newSize) {
       this.listFormLabel.size = newSize;
-      this.pagingQueryList();
+      this.pagingQueryListIn();
     },
     // 分页查询仓库
-    async pagingQueryList() {
-      const { data } = await pagingQueryList(this.listFormLabel);
+    async pagingQueryListIn() {
+      const { data } = await pagingQueryListIn(this.listFormLabel);
       this.tableData = data.data.records;
       this.total = data.data.total - 0;
     },
