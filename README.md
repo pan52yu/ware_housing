@@ -38,3 +38,6 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 使用`file-saver`和`xlsx`插件
 `import FileSaver from "file-saver";
 import * as XLSX from "xlsx";`
+
+## 表格每一列格式化
+Table-column 有`formatter`属性用来格式化内容
