@@ -1,10 +1,12 @@
 <template>
-  <div class="task-add">task-add</div>
+  <div class="index">
+    <router-view></router-view>
+  </div>
 </template>
 
 <script>
 export default {
-  name: "task-add",
+  name: "index",
   data() {
     return {};
   },

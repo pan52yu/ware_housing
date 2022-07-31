@@ -37,3 +37,9 @@ export const PDForNextEncode = () => {
     url: `/api/codeFactory/next/PD`,
   });
 };
+
+export const RKForNextEncode = () => {
+  return request({
+    url: `/api/codeFactory/next/RK`,
+  });
+};

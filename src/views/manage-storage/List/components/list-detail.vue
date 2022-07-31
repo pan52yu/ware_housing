@@ -3,40 +3,58 @@
     <el-card>
       <el-collapse v-model="activeNames">
         <el-collapse-item title="基础信息" name="1">
-          <el-steps :active="goodsOwnerList.status" finish-status="finish">
+          <el-steps
+            :active="goodsOwnerList?.status"
+            finish-status="finish"
+            v-if="goodsOwnerList?.status !== 6"
+          >
             <el-step
               title="新建"
-              :description="goodsOwnerList.createTime"
+              :description="goodsOwnerList?.createTime"
             ></el-step>
             <el-step
               title="一盘中"
-              :description="goodsOwnerList.createTime"
+              :description="goodsOwnerList?.createTime"
             ></el-step>
             <el-step title="一盘完成"></el-step>
             <el-step title="复盘中"></el-step>
             <el-step title="复盘完成"></el-step>
+          </el-steps>
+          <el-steps
+            v-else
+            :active="goodsOwnerList?.status"
+            finish-status="finish"
+          >
+            <el-step
+              title="新建"
+              :description="goodsOwnerList?.createTime"
+            ></el-step>
+            <el-step
+              title="已取消"
+              :description="goodsOwnerList?.createTime"
+            ></el-step>
           </el-steps>
           <div class="main">
             <div class="baseInfo">
               <el-row>
                 <el-col :span="6">
                   <p>盘点单号</p>
-                  <span>{{ goodsOwnerList.code }}</span>
+                  <span>{{ goodsOwnerList?.code }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>创建时间</p>
-                  <span>{{ goodsOwnerList.createTime }}</span>
+                  <span>{{ goodsOwnerList?.createTime }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>计划盘点时间</p>
-                  <span>{{ goodsOwnerList.planCheckTime }}</span>
+                  <span>{{ goodsOwnerList?.planCheckTime }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>盘点原因</p>
                   <span>{{
-                    goodsOwnerList.reason === "GH"
+                    goodsOwnerList?.reason === "GH"
                       ? "规划"
-                      : goodsOwnerList.reason === "HZ"
+                      : goodsOwnerList?.reason === "HZ"
                       ? "货主"
                       : "差异"
                   }}</span>
@@ -47,23 +65,23 @@
                   <p>盘点维度</p>
                   <span>
                     {{
-                      goodsOwnerList.dimension === "KW" ? "库位" : "货品"
+                      goodsOwnerList?.dimension === "KW" ? "库位" : "货品"
                     }}</span
                   >
                 </el-col>
                 <el-col :span="6">
                   <p>盘点类型</p>
                   <span>{{
-                    goodsOwnerList.type === "SJPD" ? "随机盘点" : "计划盘点"
+                    goodsOwnerList?.type === "SJPD" ? "随机盘点" : "计划盘点"
                   }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>盘点仓库</p>
-                  <span>{{ goodsOwnerList.warehouseName }}</span>
+                  <span>{{ goodsOwnerList?.warehouseName }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>盘点库区</p>
-                  <span>{{ goodsOwnerList.areaName }}</span>
+                  <span>{{ goodsOwnerList?.areaName }}</span>
                 </el-col>
               </el-row>
             </div>
@@ -140,53 +158,53 @@
       <el-collapse v-model="activeNames">
         <el-collapse-item title="盘点任务">
           <div class="infoTip">
-            {{ goodsOwnerList.checkTaskEntity2 === null ? "一盘" : "复盘" }}
+            {{ goodsOwnerList?.checkTaskEntity2 === null ? "一盘" : "复盘" }}
           </div>
           <div class="main">
             <div class="baseInfo">
               <el-row>
                 <el-col :span="6">
                   <p>任务编号</p>
-                  <span>{{ goodsOwnerList.checkTaskEntity1.code }}</span>
+                  <span>{{ goodsOwnerList?.checkTaskEntity1?.code }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>盘点次数</p>
-                  <span>{{ goodsOwnerList.checkNum }}</span>
+                  <span>{{ goodsOwnerList?.checkNum }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>任务状态</p>
                   <span>{{
-                    goodsOwnerList.status === 1
+                    goodsOwnerList?.status === 1
                       ? "待分配"
-                      : goodsOwnerList.status === 2
+                      : goodsOwnerList?.status === 2
                       ? "盘点中"
-                      : goodsOwnerList.status === 3
+                      : goodsOwnerList?.status === 3
                       ? "盘点已完成"
                       : "已生成损益"
                   }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>开始时间</p>
-                  <span>{{ goodsOwnerList.planCheckTime }}</span>
+                  <span>{{ goodsOwnerList?.planCheckTime }}</span>
                 </el-col>
               </el-row>
               <el-row>
                 <el-col :span="6">
                   <p>完成时间</p>
-                  <span>{{ goodsOwnerList.updateTime }}</span>
+                  <span>{{ goodsOwnerList?.updateTime }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>盘点人</p>
-                  <span>{{ goodsOwnerList.ownerName }}</span>
+                  <span>{{ goodsOwnerList?.ownerName }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>盘点数量</p>
-                  <span>{{ goodsOwnerList.checkTotal }}</span>
+                  <span>{{ goodsOwnerList?.checkTotal }}</span>
                 </el-col>
                 <el-col :span="6">
                   <p>损益合计</p>
                   <span>{{
-                    goodsOwnerList.id1Money + goodsOwnerList.id2Money
+                    goodsOwnerList?.id1Money + goodsOwnerList?.id2Money
                   }}</span>
                 </el-col>
               </el-row>

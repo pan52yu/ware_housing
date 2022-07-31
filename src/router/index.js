@@ -169,12 +169,59 @@ const routes = [
           {
             path: "list-in/task-receive",
             component: () =>
-              import("@/views/manage-storage-in/list-in/task-receive"),
+              import(
+                "@/views/manage-storage-in/list-in/TaskReceive/task-receive"
+              ),
+          },
+          {
+            path: "list-in/task-receive/sure/:id",
+            component: () =>
+              import(
+                "@/views/manage-storage-in/list-in/TaskReceive/components/sure"
+              ),
           },
           {
             path: "list-in/task-add",
             component: () =>
-              import("@/views/manage-storage-in/list-in/task-add"),
+              import("@/views/manage-storage-in/list-in/TaskAdd/task-add"),
+          },
+          {
+            path: "list-in/task-add/sure/:id/:detail",
+            component: () =>
+              import(
+                "@/views/manage-storage-in/list-in/TaskAdd/components/sure"
+              ),
+          },
+        ],
+      },
+      {
+        path: "/manage-storage-out",
+        component: () => import("@/views/manage-storage-out/index"),
+        children: [
+          {
+            path: "list-out",
+            component: () =>
+              import("@/views/manage-storage-out/list-out/list-out"),
+          },
+          {
+            path: "list-out/details/:id",
+            component: () =>
+              import("@/views/manage-storage-out/list-out/components/details"),
+          },
+          {
+            path: "task-picking",
+            component: () =>
+              import("@/views/manage-storage-out/TaskPicking/task-picking"),
+          },
+          {
+            path: "task-picking/sure/:id/:detail",
+            component: () =>
+              import("@/views/manage-storage-out/TaskPicking/components/sure"),
+          },
+          {
+            path: "manage-task-transfer",
+            component: () =>
+              import("@/views/manage-storage-out/manage-task-transfer"),
           },
         ],
       },

@@ -2,10 +2,11 @@
   <div>
     <el-card>
       <el-steps :active="active" finish-status="success">
-        <el-step title="填写基础信息"></el-step>
-        <el-step title="填写盘点清单"></el-step>
+        <el-step title="填写出库单基础信息"></el-step>
+        <el-step title="填写承运商信息"></el-step>
+        <el-step title="填写货品明细信息"></el-step>
       </el-steps>
-      <!--   第一步：新增或者编辑货主   -->
+      <!--   第一步：填写出库单基础信息   -->
       <el-form
         :model="ruleForm"
         :rules="rules"
@@ -15,35 +16,54 @@
         v-if="active === 0"
       >
         <el-row :gutter="30">
-          <el-col :span="6">
-            <el-form-item label="入库单号" prop="code">
+          <el-col :span="8">
+            <el-form-item label="出库单号" prop="code">
               <el-input disabled v-model="ruleForm.code"></el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item label="运单编号" prop="billCode">
-              <el-input
-                placeholder="请输入"
-                v-model="ruleForm.billCode"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="计划到达时间" prop="planArrivalTime">
-              <el-date-picker
-                style="width: 100%"
-                v-model="ruleForm.planArrivalTime"
-                prefix-icon="el-icon-date"
-                value-format="yyyy-MM-dd hh:mm:ss"
-                type="datetime"
-                :picker-options="pickerOptions"
-                placeholder="选择日期时间"
+          <el-col :span="8">
+            <el-form-item label="仓库名称" prop="warehouseId">
+              <el-select
+                clearable
+                @change="searchReservoir"
+                v-model="ruleForm.warehouseId"
+                placeholder="请选择"
+                value=""
               >
-              </el-date-picker>
+                <el-option
+                  v-for="item in this.areaList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item label="请输入货主名称/编码" prop="ownerName">
+          <el-col :span="8">
+            <el-form-item label="库区名称" prop="areaId">
+              <el-select
+                clearable
+                @change="change"
+                v-model="ruleForm.areaId"
+                placeholder="请选择"
+                value=""
+              >
+                <el-option
+                  v-for="item in this.ofList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <!--    第二行    -->
+        <el-row :gutter="30">
+          <el-col :span="8">
+            <el-form-item label="货主" prop="ownerName">
               <el-autocomplete
                 style="width: 100%"
                 clearable
@@ -60,54 +80,19 @@
               </el-autocomplete>
             </el-form-item>
           </el-col>
-        </el-row>
-        <!--    第二行    -->
-        <el-row :gutter="30">
-          <el-col :span="6">
-            <el-form-item label="仓库" prop="warehouseId">
+          <el-col :span="8">
+            <el-form-item label="出库类型" prop="type">
               <el-select
                 clearable
-                v-model="ruleForm.warehouseId"
-                placeholder="请选择仓库"
+                v-model="ruleForm.type"
+                placeholder="请选择"
                 value=""
               >
-                <el-option
-                  v-for="item in this.areaList"
-                  :key="item.id"
-                  :label="item.name"
-                  :value="item.id"
-                >
-                </el-option>
+                <el-option label="B2B" value="0"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="6">
-            <el-form-item label="发货人姓名" prop="shipperName">
-              <el-input
-                placeholder="请输入"
-                v-model="ruleForm.shipperName"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="送货人姓名" prop="deliveryName">
-              <el-input
-                placeholder="请输入"
-                v-model="ruleForm.deliveryName"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="送货人电话" prop="deliveryPhone">
-              <el-input
-                placeholder="请输入"
-                v-model="ruleForm.deliveryPhone"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="30">
-          <el-col :span="6">
+          <el-col :span="8">
             <el-form-item label="备注" prop="remark">
               <el-input
                 placeholder="请输入"
@@ -125,8 +110,100 @@
           </div>
         </el-row>
       </el-form>
-      <!--   第二步 ：分配库位  -->
-      <div class="distributionTheReservoir" v-else>
+      <!--   第二步：填写货品明细信息   -->
+      <el-form
+        :model="ruleForm"
+        :rules="rules"
+        ref="ruleForm2"
+        label-width="100px"
+        label-position="top"
+        v-if="active === 1"
+      >
+        <el-row :gutter="30">
+          <el-col :span="6">
+            <el-form-item label="运单单号" prop="billCode">
+              <el-input v-model="ruleForm.billCode"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="承运商" prop="carrierId">
+              <el-select
+                clearable
+                v-model="ruleForm.carrierId"
+                placeholder="请选择"
+                value=""
+              >
+                <el-option
+                  v-for="item in this.carrierList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="计划出库时间" prop="deliveryName">
+              <el-date-picker
+                style="width: 100%"
+                v-model="ruleForm.planOutTime"
+                prefix-icon="el-icon-date"
+                value-format="yyyy-MM-dd hh:mm:ss"
+                type="datetime"
+                :picker-options="pickerOptions"
+                placeholder="选择日期时间"
+              >
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="司机姓名" prop="driverName">
+              <el-input
+                placeholder="请输入"
+                v-model="ruleForm.driverName"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <!--    第二行    -->
+        <el-row :gutter="30">
+          <el-col :span="6">
+            <el-form-item label="司机电话" prop="driverPhone">
+              <el-input
+                placeholder="请输入"
+                v-model="ruleForm.driverPhone"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="车牌号" prop="license">
+              <el-input
+                placeholder="请输入"
+                v-model="ruleForm.license"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="收货人名称" prop="receiverName">
+              <el-input
+                placeholder="请输入"
+                v-model="ruleForm.receiverName"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <div class="buttonBox">
+            <el-button @click="active--" round>上一步</el-button>
+            <el-button @click.native="next" type="warning" round
+              >下一步
+            </el-button>
+          </div>
+        </el-row>
+      </el-form>
+      <!--   第三步 ：填写货品明细信息  -->
+      <div class="distributionTheReservoir" v-if="active === 2">
         <el-card style="margin: 30px 0 15px 0">
           <el-row>
             <el-button type="success" @click="addInventoryList" round
@@ -262,11 +339,19 @@
           ref="ListFormRef"
         >
           <el-row :gutter="30">
-            <el-col :span="12">
+            <el-col :span="6">
               <el-form-item label="货品" prop="goods">
                 <el-input
                   placeholder="请输入名称/编码/条码"
                   v-model="queryInventoryList.goods"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item label="货主" prop="owner">
+                <el-input
+                  placeholder="请输入名称/编码"
+                  v-model="queryInventoryList.owner"
                 ></el-input>
               </el-form-item>
             </el-col>
@@ -354,18 +439,19 @@
 </template>
 
 <script>
-import { RKForNextEncode } from "@/api/codeFactory";
-import { queryAllWarehouse } from "@/api/list-in";
-import { queryAllOwnersManagement } from "@/api/list";
+import { HPForNextEncode } from "@/api/codeFactory";
+import { queryAllWarehouse } from "@/api/area";
 import { fuzzyQueryOwner } from "@/api/goods";
+import { batchAddGoods } from "@/api/list-in";
+import { pagingQueryDetailedInventory } from "@/api/list";
+import { queryAllArea } from "@/api/location";
 import {
-  queryReceiptListById,
-  addReceipt,
-  modifyReceipt,
-  pagingQueryReceipt,
-  batchAddGoods,
-  pagingQueryInventoryListingSubsidiary,
-} from "@/api/list-in";
+  queryAllShippers,
+  addOutboundOrder,
+  modifyOutboundOrder,
+  queryOutboundOrderListById,
+  pagingQueryOutboundListingSubsidiary,
+} from "@/api/list-out";
 
 export default {
   name: "Details",
@@ -445,7 +531,6 @@ export default {
       total: 0,
       total2: 0,
       dialogVisible: false,
-      // treeList: [],
       // 选中的库位数组
       multipleSelection: [],
       areaList: [],
@@ -453,20 +538,21 @@ export default {
       // 当前的库位
       currentList: [],
       cancelAssignmentDialogBox: false,
-      ownerList: [],
       addBatchList: [],
+      restaurant2: [],
+      ofList: [], //库区列表
+      carrierList: [], //承运商列表
       pickerOptions: {
         disabledDate(time) {
           return time.getTime() < new Date().getTime() - 86400000;
         },
       },
-      restaurant2: [],
     };
   },
   created() {
-    this.queryReceiptListById();
-    this.queryAllOwnersManagement();
+    this.queryOutboundOrderListById();
     this.fuzzyQueryOwner();
+    this.queryAllWarehouse();
   },
   computed: {
     allGoodsVolume() {
@@ -481,6 +567,23 @@ export default {
     },
   },
   methods: {
+    change(id) {
+      console.log(id);
+    },
+    // 根据仓库找库区
+    async searchReservoir(id) {
+      console.log(id);
+      const { data } = await queryAllArea({
+        warehouseId: id,
+      });
+      console.log(data);
+      this.ofList = data.data;
+    },
+    async queryAllWarehouse() {
+      const { data } = await queryAllWarehouse();
+      console.log(data);
+      this.areaList = data.data;
+    },
     querySearch2(queryString, cb) {
       const restaurants = this.restaurant2;
       const results = queryString
@@ -499,13 +602,13 @@ export default {
     },
     // 找仓库
     async handleSelect2(item) {
-      this.areaList = [];
+      console.log(item);
       this.ruleForm.ownerId = item.address;
-      const { data } = await queryAllWarehouse(item.address);
-      this.areaList = data.data;
+      this.ruleForm.ownerName = item.value;
     },
     //  模糊查询货主 fuzzyQueryOwner
     async fuzzyQueryOwner() {
+      console.log(1131241221421);
       const res = await fuzzyQueryOwner();
       this.qwneList = res.data.data;
       this.qwneList.forEach((item) => {
@@ -543,22 +646,14 @@ export default {
     },
     async addInventoryList() {
       this.dialogVisible = true;
-      const { data } = await pagingQueryReceipt({
+      console.log(this.ruleForm.areaId);
+      const { data } = await pagingQueryDetailedInventory({
         ...this.queryInventoryList,
         ownerId: this.ruleForm.ownerId,
+        areaId: this.ruleForm.areaId,
       });
       this.tableDataList = data.data.records;
       this.total2 = data.data.total - 0;
-    },
-    async queryAllOwnersManagement() {
-      const res = await queryAllOwnersManagement();
-      console.log(res);
-      res.data.data.forEach((item) => {
-        this.ownerList.push({
-          id: item.id,
-          name: item.name,
-        });
-      });
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;
@@ -574,15 +669,15 @@ export default {
     cancellationDistribution() {
       this.$message.error("演示系统，不支持此操作");
     },
-    async queryReceiptListById() {
+    async queryOutboundOrderListById() {
       try {
         // 不是新增就是编辑 发查询请求
         if (this.$route.params.id !== "null") {
-          const res = await queryReceiptListById(this.$route.params.id);
+          const res = await queryOutboundOrderListById(this.$route.params.id);
           this.ruleForm = res.data.data;
         } else {
           // 是新增 查询code
-          const res = await RKForNextEncode();
+          const res = await HPForNextEncode();
           if (res.status !== 200) {
             return this.$message.error("获取code失败");
           }
@@ -596,36 +691,48 @@ export default {
       // 第一步提交新增或者编辑货主
       if (this.active === 0) {
         try {
-          await this.$refs.ruleForm.validate();
           if (this.$route.params.id === "null") {
-            const { data } = await addReceipt(this.ruleForm);
+            await this.$refs.ruleForm.validate();
+            const { data } = await queryAllShippers();
+            console.log(data);
+            this.carrierList = data.data;
+          }
+        } catch (e) {
+          console.log(e);
+        }
+        this.active++;
+        // 第二步：填写货品明细信息
+      } else if (this.active === 1) {
+        try {
+          if (this.$route.params.id === "null") {
+            const { data } = await addOutboundOrder(this.ruleForm);
             this.queryList.masterId = data.data.id;
             this.queryInventoryList.areaId = data.data.areaId;
           } else {
             if (this.ruleForm.dimension === "KW") {
               this.ruleForm.ownerId = null;
             } else {
-              this.ruleForm.areaId = null;
               this.ruleForm.warehouseId = null;
             }
-            const { data } = await modifyReceipt(this.ruleForm);
+            const { data } = await modifyOutboundOrder(this.ruleForm);
             this.queryList.masterId = data.data.id;
             this.queryInventoryList.areaId = data.data.areaId;
           }
           this.$message.success("恭喜你，提交成功！");
-          this.active++;
-          await this.pagingQueryInventoryListingSubsidiary();
+          await this.pagingQueryOutboundListingSubsidiary();
         } catch (e) {
           console.log(e);
         }
+        this.active++;
       } else {
-        //   第二步 ：分配库位
-        await this.$router.push("/manage-storage-in/list-in/list");
+        // 第三步 ：填写货品明细信息
+        await this.$router.push("/manage-storage-out/list-out");
       }
     },
     // 入库清单明细
-    async pagingQueryInventoryListingSubsidiary() {
-      const { data } = await pagingQueryInventoryListingSubsidiary(
+    async pagingQueryOutboundListingSubsidiary() {
+      console.log(1112211124);
+      const { data } = await pagingQueryOutboundListingSubsidiary(
         this.queryList
       );
       this.tableData = data.data.records;
@@ -633,19 +740,19 @@ export default {
     },
     handleSizeChange(newPage) {
       this.queryList.size = newPage;
-      this.pagingQueryInventoryListingSubsidiary();
+      this.pagingQueryOutboundListingSubsidiary();
     },
     handleCurrentChange(newSize) {
       this.queryList.current = newSize;
-      this.pagingQueryInventoryListingSubsidiary();
+      this.pagingQueryOutboundListingSubsidiary();
     },
     handleSizeChange2(newPage) {
       this.queryInventoryList.size = newPage;
-      this.pagingQueryReceipt();
+      this.pagingQueryDetailedInventory();
     },
     handleCurrentChange2(newSize) {
       this.queryInventoryList.current = newSize;
-      this.pagingQueryReceipt();
+      this.pagingQueryDetailedInventory();
     },
   },
 };
@@ -666,7 +773,7 @@ el-cascader {
 }
 
 .el-steps {
-  width: 35%;
+  width: 50%;
   margin: 0 auto;
   margin-top: 56px;
 }

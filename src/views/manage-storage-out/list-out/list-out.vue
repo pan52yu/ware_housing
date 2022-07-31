@@ -8,7 +8,7 @@
       >
         <el-row :gutter="30">
           <el-col :span="6">
-            <el-form-item label="入库单号" prop="code">
+            <el-form-item label="出库单号" prop="code">
               <el-input
                 placeholder="请输入"
                 v-model="listFormLabel.code"
@@ -50,23 +50,16 @@
         <el-button
           @click="
             $router.push({
-              path: '/manage-storage-in/list-in/list/details/null',
+              path: '/manage-storage-out/list-out/details/null',
             })
           "
           type="success"
           round
-          >新增入库单
-        </el-button>
-        <el-button
-          @click="generateReceivingTask"
-          style="background-color: #f8f5f5"
-          round
-          >生成收货任务
+          >新增出库单
         </el-button>
       </el-row>
       <!--   表格区域   -->
       <el-table
-        @selection-change="handleSelectionChange"
         v-if="tableData.length"
         :data="tableData"
         :header-cell-style="{
@@ -82,45 +75,52 @@
         border
         style="width: 100%"
       >
-        <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column type="index" width="50" label="序号"></el-table-column>
         <el-table-column
           prop="code"
-          label="入库单号"
+          label="出库单号"
           width="160"
         ></el-table-column>
         <el-table-column
           prop="billCode"
-          label="运单编号"
+          label="货主运单编号"
           width="160"
         ></el-table-column>
         <el-table-column
-          prop="planArrivalTime"
-          label="计划到达时间"
-          width="200"
-        >
-        </el-table-column>
-        <el-table-column
-          sortable
-          prop="ownerCode"
-          label="货主编号"
-          width="160"
-        ></el-table-column>
-        <el-table-column
-          sortable
           prop="ownerName"
           label="货主名称"
           width="160"
         ></el-table-column>
-        <el-table-column prop="warehouseName" label="仓库名称" width="160">
+        <el-table-column
+          prop="warehouseName"
+          label="出库仓库"
+          width="280"
+        ></el-table-column>
+        <el-table-column prop="areaName" label="出库库区" width="280">
         </el-table-column>
-        <el-table-column prop="license" label="车牌号" width="160">
+        <el-table-column
+          sortable
+          prop="license"
+          label="计划出库时间"
+          width="160"
+        >
         </el-table-column>
-        <el-table-column prop="deliveryName" label="送货人名称" width="160">
+        <el-table-column sortable prop="goodsNum" label="货品数量" width="160">
         </el-table-column>
-        <el-table-column prop="deliveryPhone" label="送货人电话" width="160">
-        </el-table-column>
-        <el-table-column prop="status" label="入库单状态" width="160">
+        <el-table-column
+          :filters="[
+            { text: '新建', value: 1 },
+            { text: '收货中', value: 2 },
+            { text: '已取消', value: 3 },
+            { text: '收货完成', value: 4 },
+            { text: '上架中', value: 5 },
+            { text: '上架完成', value: 6 },
+          ]"
+          :filter-method="filterStatus"
+          prop="status"
+          label="出库单状态"
+          width="160"
+        >
           <template v-slot="scope">
             {{
               scope.row.status === 1
@@ -137,8 +137,6 @@
             }}
           </template>
         </el-table-column>
-        <el-table-column prop="planNum" label="预计到货数" width="160">
-        </el-table-column>
         <el-table-column prop="createName" label="创建人" width="160">
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="200">
@@ -148,7 +146,7 @@
             <el-button
               @click="
                 $router.push({
-                  path: `/manage-storage-in/list-in/list/details/${scope.row.id}`,
+                  path: `/manage-storage-out/list-out/details/${scope.row.id}`,
                 })
               "
               type="text"
@@ -157,18 +155,18 @@
               >修改详情
             </el-button>
             <el-button
+              @click="generatePickingTask(scope.row)"
+              type="text"
+              size="small"
+              v-show="scope.row.status === 1"
+              >生成拣货任务
+            </el-button>
+            <el-button
               @click="cancel(scope.row)"
               type="text"
               size="small"
               v-show="scope.row.status === 1"
               >取消
-            </el-button>
-            <el-button
-              @click="click(scope.row)"
-              type="text"
-              size="small"
-              v-show="scope.row.status === 1"
-              >生成收货任务
             </el-button>
             <el-button
               v-show="scope.row.status !== 1"
@@ -188,7 +186,7 @@
       <!--   没数据时显示的   -->
       <div class="emptyTip" v-else>
         <span class="imgIcon"></span>
-        <p>暂无盘点单</p>
+        <p>暂无出库单</p>
       </div>
       <!--   分页   -->
       <el-row type="flex" justify="center">
@@ -205,11 +203,11 @@
       </el-row>
     </el-card>
     <!--  生成表单任务弹出框  -->
-    <el-dialog title="盘点任务生成" :visible.sync="dialogVisible" width="30%">
+    <el-dialog title="生成拣货任务" :visible.sync="dialogVisible" width="30%">
       <div class="spanSubTitle">
-        {{ countingTaskList.length }}个盘点任务生成失败！
+        {{ countingTaskList.length }}个拣货任务生成失败！
       </div>
-      <div class="divFailureMsg">盘点任务生成失败原因如下</div>
+      <div class="divFailureMsg">拣货任务生成失败原因如下</div>
       <div class="divItemList">
         {{ errList }}
       </div>
@@ -224,10 +222,10 @@
 
 <script>
 import {
-  pagingQueryListIn,
-  generateReceivingTask,
-  cancelReceipt,
-} from "@/api/list-in";
+  pagingQueryListOut,
+  generatePickingTask,
+  cancelOutboundOrder,
+} from "@/api/list-out";
 
 export default {
   name: "List",
@@ -242,24 +240,22 @@ export default {
       },
       total: 0,
       tableData: [],
-      cascaderList: [], // 盘点库区列表
-      shipperList: [], // 货主列表
-      multipleSelection: [],
       dialogVisible: false,
       countingTaskList: [],
       errList: "",
     };
   },
   created() {
-    this.pagingQueryListIn();
-    this.queryAllOwnersManagement();
-    this.queryAllWarehouse();
+    this.pagingQueryListOut();
   },
   methods: {
+    filterStatus(value, row) {
+      return row.status === value;
+    },
     async cancel(row) {
       try {
         const flags = await this.$confirm(
-          `确认取消入库单号为${row.code}的入库单吗？`,
+          `确认取消出库单号为${row.code}的出库单吗？`,
           "取消确认",
           {
             confirmButtonText: "确定",
@@ -268,35 +264,24 @@ export default {
           }
         );
         if (flags === "confirm") {
-          await cancelReceipt(row.id);
+          await cancelOutboundOrder(row.id);
           this.$message.success("取消成功");
         }
       } catch (e) {
         this.$message.error("出错啦~");
       }
     },
-    click(row) {
-      this.multipleSelection = [row.id];
-      this.generateReceivingTask();
-    },
-    // 生成盘点任务
-    async generateReceivingTask() {
-      if (!this.multipleSelection.length) {
-        this.$message.error("请选择入库单");
-      } else {
-        const res = await generateReceivingTask(this.multipleSelection);
+    // 生成拣货任务
+    async generatePickingTask(row) {
+      try {
+        const res = await generatePickingTask([row.id]);
         this.countingTaskList = res.data.data.errors;
         this.errList = this.countingTaskList.join("、");
         this.dialogVisible = true;
-        await this.pagingQueryListIn();
+        await this.pagingQueryListOut();
+      } catch (e) {
+        this.$message.error("出错啦~");
       }
-    },
-    handleSelectionChange(val) {
-      this.multipleSelection = [];
-      val.forEach((item) => {
-        this.multipleSelection.push(item.id);
-      });
-      console.log(val);
     },
     // 删除
     deleteWarehouse() {
@@ -311,24 +296,24 @@ export default {
       if (this.listFormLabel.areaId) {
         this.listFormLabel.areaId = this.listFormLabel.areaId[1];
       }
-      this.pagingQueryListIn();
+      this.pagingQueryListOut();
     },
     // 重置表单
     resetFields() {
       this.$refs.warehouseFormRef.resetFields();
-      this.pagingQueryListIn();
+      this.pagingQueryListOut();
     },
     handleCurrentChange(newPage) {
       this.listFormLabel.current = newPage;
-      this.pagingQueryListIn();
+      this.pagingQueryListOut();
     },
     handleSizeChange(newSize) {
       this.listFormLabel.size = newSize;
-      this.pagingQueryListIn();
+      this.pagingQueryListOut();
     },
     // 分页查询仓库
-    async pagingQueryListIn() {
-      const { data } = await pagingQueryListIn(this.listFormLabel);
+    async pagingQueryListOut() {
+      const { data } = await pagingQueryListOut(this.listFormLabel);
       this.tableData = data.data.records;
       this.total = data.data.total - 0;
     },
