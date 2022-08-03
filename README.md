@@ -17,3 +17,15 @@ import * as XLSX from "xlsx";`
 
 ## 表格每一列格式化
 Table-column 有`formatter`属性用来格式化内容
+
+## 级联选择器
+`https://element.eleme.cn/#/zh-CN/component/cascader`
++ props属性介绍
+
+  + checkStrictly: true ==> 是否让父子不联动
+
+  + label: 'name' ==> 树形结构展示的名称
+
+  + value: 'name' ==> 选中某一项之后，真正提交的数据
+
+  + emitPath: false ==> 是否拿到嵌套节点的所有数据(我们只需要当前节点的name值即可)
